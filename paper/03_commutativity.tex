@@ -1,0 +1,128 @@
+\section{Commutativity problem}
+\label{sec:commutativity}
+
+We introduce the main problem that we study.
+%
+The \emph{commutative image} of a word $w \in \Sigma^*$ (sometimes called \emph{Parikh image})
+over a totally ordered alphabet $\Sigma = \set{a_1, \dots, a_d}$
+is the vector $\Parikh w := \tuple{\multiplicity {a_1} w, \dots, \multiplicity {a_d} w} \in \N^d$,
+where $\multiplicity {a_j} w$ is the number of occurrences of $a_j$ in $w$.
+%
+For two words $u, v$ we write $u \sim v$ if they have the same commutative image,
+\ie, one word can be obtained from the other by permuting the positions of letters.
+%
+For instance, $a_1a_1a_2 \sim a_1a_2a_1 \sim a_2a_1a_1$,
+since the commutative image of all three words is $\tuple{2, 1} \in \N^2$.
+%
+A series $f \in \series \Q \Sigma$ is \emph{commutative} 
+(called \emph{échangeable} in~\cite{Fliess:1981})
+if for every two words $u, v \in \Sigma^*$ with the same commutative image $u \sim v$,
+the series produces the same value $f_u = f_v$.
+
+On the face of it, commutativity demands to check infinitely many equalities.
+%
+Our simple, but crucial observation is that it can be characterised by finitely many equations.
+%
+Clearly, if $f$ is commutative, then for every input symbols $a, b \in \Sigma$ we have
+%
+\begin{align}
+    \label{eq:swap}
+    \tag{\textsf{swap}}
+    \deriveleft a \deriveleft b f &= \deriveleft b \deriveleft a f, \quad \text{ and } \\
+    \label{eq:rotate}
+    \tag{\textsf{rotate}}
+    \deriveleft a f &= \deriveright a f.
+\end{align}
+%
+Indeed, the first equation corresponds to exchanging the first two input letters $abw \sim baw$,
+and the second equation corresponds to a rotation $aw \sim wa$.
+%
+Since swaps and rotations suffice to generate all commutatively equivalent words,
+we obtain the following characterisation.
+%
+\begin{lemma}[Characterisation of commutativity]
+    \label{lem:commutativity}
+    A series $f \in \series \Q \Sigma$ is commutative if, and only if,
+    it satisfies equations~\cref{eq:swap} and \cref{eq:rotate},
+    for every $a, b \in \Sigma$.
+\end{lemma}
+%
+\noindent
+Thanks to \cref{lem:commutativity},
+commutativity is decidable for effective prevarieties of series.
+%
+Indeed, if $\SS$ is a prevariety and $f \in \SS$,
+then $\deriveleft a f, \deriveright a f, \in \SS$,
+as well as all the other series mentioned in \cref{eq:swap,eq:rotate}.
+%
+By effectiveness, we can construct finite representations for these series and decide the equality tests.
+%
+This observation will allow us to decide commutativity for rich classes of series
+for which the commutativity problem is nontrivial.
+%
+\thmCommutativityForPrevarieties*
+
+\begin{remark}
+    \Cref{thm:commutativity for effective prevarieties} allows us
+    to reduce commutativity to finitely many equality tests.
+    %
+    The observation that commutativity can be characterised by finitely many equations is certainly not novel.
+    For instance, in the context of formal verification
+    one could find an analogous statement in~\cite[Prop.~2]{ChenSongWu:CAV:2016}.
+\end{remark}
+
+The three classes of series that we consider in~\cref{sec:Hadamard,sec:shuffle,sec:infiltration} will turn out to be effective prevarieties,
+and thus commutativity is decidable for them.
+%
+One may wonder whether equality reduces back to commutativity, so that the two problems are in fact inter-reducible.
+This will indeed be the case, thanks to an additional closure property that we introduce next.
+%
+We say that a series $g \in \series \Q \Sigma$
+is a \emph{left anti-derivative} of a tuple of series $f = \tuple{f_a}_{a \in \Sigma} \in \series \Q \Sigma^\Sigma$
+if $\deriveleft a g = f_a$ for all $a \in \Sigma$.
+%
+Clearly, once we fix the initial condition $g_\e \in \Q$,
+anti-derivatives are unique.
+%
+A class of series $\SS$ is \emph{closed under left anti-derivatives} if
+whenever $g$ is a left anti-derivative of a tuple of series $f$ from $\SS_\Sigma$,
+then $g$ is also in $\SS_\Sigma$.
+%
+\begin{restatable}{lemma}{commutativityGeneralisesEquality}
+    \label{lem:equality reduces to commutativity}
+    Le $\SS$ be an effective prevariety of series, except that the equality problem is not assumed to be decidable.
+    If $\SS$ is effectively closed under left anti-derivatives,
+    then the zeroness problem effectively reduces to the commutativity problem.
+\end{restatable}
+\begin{proof}
+    Consider a finite alphabet $\Sigma$ and a series $f \in \SS_\Sigma$ over $\Sigma$.
+    Let $a, b \not \in \Sigma$ be two fresh letters not in $\Sigma$
+    and define the enlarged alphabet $\Gamma := \Sigma \cup \set{a, b}$.
+    %
+    Let $g \in \SS_\Gamma$ be the unique series such that $g_\e = g_x = 0$ for all $x \in \Gamma$,
+    and, for every $x, y \in \Gamma$,
+    %
+    \begin{align*}
+        \deriveleft y \deriveleft x g =
+        \begin{cases}
+            f
+                &\text{if } x = a, y = b, \text{ and } \\
+            \zero
+                &\text{otherwise.}
+        \end{cases}
+    \end{align*}
+    %
+    Since $\SS$ is closed under anti-derivatives, $g$ is in $\SS_\Gamma$.
+    %
+    We claim that $g$ is commutative if, and only if, $f = \zero$.
+    The ``if'' direction is clear since $f = \zero$ implies $g = \zero$, which is commutative.
+    For the ``only if'' direction, assume that $f \neq \zero$, so that there is a word $w \in \Sigma^*$ in its support $f(w) \neq 0$.
+    Then $g(abw) = f(w) \neq 0$ however $g(baw) = 0$,
+    and thus $g$ is not commutative.
+\end{proof}
+
+In~\cref{sec:Hadamard,sec:shuffle,sec:infiltration}
+we leverage~\cref{thm:commutativity for effective prevarieties,lem:equality reduces to commutativity}
+for three expressive classes of series, together with respective applications.
+%
+%Some extensions will be mentioned in the last section~\cref{sec:extensions}.

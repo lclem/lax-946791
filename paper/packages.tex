@@ -1,0 +1,84 @@
+% !TEX root = main.tex
+
+\newcommand\hmmax{0}
+\newcommand\bmmax{0}
+% \DeclareMathVersion{normal2}
+
+% \usepackage{ebgaramond}
+\usepackage[T1]{fontenc}
+\usepackage[utf8x]{inputenc}
+\usepackage{type1ec}
+% \usepackage{fontspec}
+\usepackage{stmaryrd}
+\usepackage{amsmath}
+\usepackage{multicol}
+
+% \usepackage{biblatex}
+% \usepackage[natbib,style=authoryear,refsection=chapter]{biblatex}
+
+\RequirePackage[datamodel=acmdatamodel, style=acmnumeric]{biblatex}
+
+% \let\proof\relax
+% \let\endproof\relax
+\usepackage{amsthm}
+
+% \usepackage{amssymb}
+\usepackage{bbm}
+\usepackage{dsfont}
+\usepackage{mathtools}
+\usepackage{thm-restate}
+\usepackage{xspace}
+\usepackage[textwidth=2cm,textsize=small]{todonotes}
+
+\let\labelindent\relax
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{stackrel}
+% \usepackage{MnSymbol} % for \cupdot
+\usepackage{todonotes}
+% \usepackage{shuffle}
+% \usepackage{paralist}
+\usepackage{graphicx}
+\usepackage{etoolbox}
+\usepackage{textcase}
+\usepackage[bb=boondox]{mathalfa}
+\usepackage{verbatim}
+
+\usepackage[contents={}]{background}
+\newcommand\BGfrom[1]{%
+\AddEverypageHook{%
+  \ifnum\value{page}>\numexpr#1-1\relax
+    \backgroundsetup{
+      contents={Over the limit},
+      color=red,
+      scale=10,
+      opacity=0.5
+    }%
+  \fi
+  \BgMaterial%
+  }%
+}
+% adds a red background for pages after the limit
+% \BGfrom{7}
+
+\usepackage{amstext} % for \text macro
+\usepackage{array}   % for \newcolumntype macro
+\newcolumntype{C}{>{$}c<{$}} % math-mode version of "c" column type
+\newcolumntype{L}{>{$}l<{$}} % math-mode version of "l" column type
+
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usetikzlibrary{decorations.markings}
+
+\makeatletter
+\patchcmd{\@sect}{\uppercase}{\MakeTextUppercase}{}{}
+\patchcmd{\@sect}{\uppercase}{\MakeTextUppercase}{}{}
+\makeatother

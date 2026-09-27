@@ -1,0 +1,271 @@
+%!TEX root main.tex
+\section{Linearly-finite series and recognisable series}
+\label{sec:recognisable}
+
+This brief section does not contain any new results,
+however it will be instructive in comparison with the stronger results
+developed in~\cref{sec:Hadamard,sec:shuffle,sec:infiltration}.
+%
+%Recall that a \emph{vector space} over the rationals $\Q$ is a tuple $\V = \tuple{V; %\zero, \cdot, +}$
+%consisting of the zero vector $\zero$, a scalar product $\cdot : \Q \times V \to V$a
+%and compatible addition operation $+ : V \times V \to V$.
+%
+% A \emph{linear transition system} consists of a set $V$ simultaneously carrying the structure of a weighted transition system and a vector space.
+% %
+% Formally, a \emph{linear transition system} (\LTS) is a tuple
+% $\A = \tuple{\Sigma, V; F, \delta; \zero, \cdot, +}$
+% where $\T = \tuple {\Sigma, V; F, \delta}$ is a \WTS\-
+% and $\V = \tuple{V; \zero, \cdot, +}$ is a vector space (over the rationals $\Q$).
+% %
+% Moreover, we require that the output mapping $F : V \to \Q$
+% and the transition functions $\delta_a : V \to V$ (for all $a \in \Sigma$) are linear.
+% %
+% For instance, series with left derivatives
+% $\Tleft = \tuple{\Sigma, \series \Q \Sigma; \e, \deriveleft {}; \zero, \cdot, +}$
+% form a linear transition system.
+
+\paragraph{Linearly-finite series.}
+
+We recall a semantic mechanism to define classes of series
+that will be useful in the rest of the paper in comparison to more general classes.
+%
+Given a set of series $F \subseteq \series \Q \Sigma$,
+let their \emph{linear span}, denoted by $\linearspan \Q F$,
+be the set of finite linear combinations of series from $F$,
+with coefficients from $\Q$.
+%
+In other words, elements of this set are of the form $c_1 \cdot f_1 + \cdots + c_n \cdot f_n$
+for some $f_1, \dots, f_n \in F$ and $c_1, \dots, c_n \in \Q$.
+%
+It is easy to see that $\linearspan \Q F$ is a vector space over $\Q$ containing $F$,
+and in fact it is the smallest such vector space.
+%
+Sets of series of the form $\linearspan \Q {f_1, \dots, f_k}$ are called \emph{finitely generated},
+with \emph{generators} $f_1, \dots, f_k$.
+%
+We say that a series $f \in \series \Q \Sigma$ is \emph{linearly finite}
+if it belongs to a finitely generated $\Q$-vector space of series
+closed under left derivatives $\deriveleft a$, $a \in \Sigma$.
+%
+In other words, $f$ is linearly finite when there are generators $f_1, \dots, f_k \in \series \Q \Sigma$ \st:
+%
+\begin{enumerate}[label=\textbf{(R.\arabic*)}]
+    \item \label{linearly_finite:1} $f \in \linearspan \Q {f_1, \dots, f_k}$ and
+    \item \label{linearly_finite:2} $\deriveleft a f_i \in \linearspan \Q {f_1, \dots, f_k}$
+    for every $a \in \Sigma$ and $1 \leq i \leq k$,
+\end{enumerate}
+
+\begin{remark}
+    We would get the same class if we additionally required that the generators
+    are obtained from $f$ itself by a finite number of left derivatives.
+    %
+    In other words, we could take the generators to be of the form $f_i = \deriveleft {w_i} f$ for some words $w_i \in \Sigma^*$.
+    %
+    Since this will not be the case for the more general classes of series that we will consider in the rest of the paper,
+    we have chosen the definition above.
+\end{remark}
+
+\begin{lemma}
+    \label{lem:recognisable closure properties}
+    The class of linearly finite series is effectively closed under
+    scalar product, addition, left derivatives and anti-derivatives.
+\end{lemma}
+%
+\begin{proof}
+    Closure under scalar product follows from the definition of linear span.
+    %
+    Regarding closure under addition, let $f, g$ be linearly finite series with generators $F$, resp., $G$.
+    Then $f + g$ is linearly finite with generators $F \cup G$.
+    %
+    Closure under left derivatives holds by design:
+    If $f$ is linearly finite with generators $G$,  %= \set {f_1, \dots, f_k}$,
+    then for every $a \in \Sigma$ the series $\deriveleft a f$ is also linearly finite with the same set of generators.
+    %
+    % Indeed, by \cref{linearly_finite:1} $f$ is of the form $\sum_{i = 1}^k c_i \cdot f_i$ for some $c_i \in \Q$,
+    % and thus by linearity of left derivative we have $\deriveleft a f = \sum_{i = 1}^k c_i \cdot \deriveleft a f_i$.
+    % %
+    % But now by \cref{linearly_finite:2} we can replace each $\deriveleft a f_i$ by a linear combination of the generators,
+    % showing that $\deriveleft a f$ is in the linear span of $G$.
+    %
+    Finally, for closure under anti-derivatives
+    consider linearly finite series $f_1, \dots, f_d$ with generators, resp., $G_1, \dots, G_d$
+    \st~$\deriveleft {a_j} f = f_j$ for every $1 \leq j \leq d$.
+    %
+    Then $f$ is linearly finite with generators $\set {f, f_1, \dots, f_d} \cup G_1 \cup \cdots \cup G_d$.
+\end{proof}
+
+The class of linearly finite series is also closed under right derivatives,
+however we will obtain this from a stronger closure property, namely closure under reversal.
+%
+To show the latter, we will use a stronger representation for linearly finite series,
+which we recall next.
+
+\paragraph{Linear representations.}
+
+A \emph{linear representation} is a tuple $\tuple{\Sigma, k, x, y, M}$,
+where $\Sigma = \set{a_1, \dots, a_d}$ is a finite alphabet,
+$k \in \N$ is the \emph{dimension} of the representation,
+$x \in \Q^{1 \times k}$ is a row vector of \emph{initial weights},
+$y \in \Q^{k \times 1}$ is a column vector of \emph{final weights},
+and $M : \Sigma \to \Q^{k \times k}$ is the \emph{transition function},
+assigning to each input letter $a \in \Sigma$ a transition matrix $M(a) \in \Q^{k \times k}$.
+%
+The transition function $M$ is extended homomorphically to all input words $M : \Sigma^* \to \Q^{k \times k}$
+by $M(\e) := I_k$ (the $k \times k$ identity matrix)
+and $M(a \cdot w) := M(a) \cdot M(w)$ for every $a \in \Sigma$ and $w \in \Sigma^*$.
+%
+A linear representation \emph{recognises} the series $f \in \series \Q \Sigma$
+mapping an input word $w \in \Sigma^*$ to $\coefficient w f := x \cdot M(w) \cdot y$.
+%
+A series is \emph{recognisable} if it is recognised by some linear representation.
+%
+The following coincidence result is classical (\cf~\cite[Proposition~5.1]{BerstelReutenauer:CUP:2010}).
+%
+\begin{lemma}
+    A series is recognisable if, and only if, it is linearly finite.
+\end{lemma}
+%
+% \begin{proof}
+%     For the ``only if'' direction, assume that $f$ is recognisable.
+%     Let $\tuple{\Sigma, k, x, y, M}$ be a linear representation recognising $f$.
+%     %
+%     Consider the series $g := M \cdot y \in \series {\Q^{k \times 1}} \Sigma$.
+%     %
+%     In other words, $g_i(w)$ is the $i$-th component of the vector $M(w) \cdot y$.
+%     %
+%     Then $f$ is linearly finite with generators $g_1, \dots, g_k$.
+%     Indeed, $f = u \cdot M \cdot y = \sum_{i = 1}^k u_i \cdot g_i$, showing~\cref{linearly_finite:1}.
+%     Moreover, $\deriveleft a g \in \series {\Q^{k \times 1}} \Sigma$ is the series that maps an input word $w$ to
+%     %
+%     \begin{align*}
+%         g(a \cdot w)
+%         = M(a) \cdot M(w) \cdot y
+%         = M(a) \cdot g(w),
+%     \end{align*}
+%     %
+%     and thus all components of $\deriveleft a g = M(a) \cdot g$ are in the linear span of the generators.
+%
+%     For the other direction, assume that $f$ is linearly finite
+%     with generators $g = \tuple{g_1, \dots, g_k} \in \series \Q \Sigma^{k \times 1}$.
+%     %
+%     Since $f$ is in the linear span of the generators by~\cref{linearly_finite:1},
+%     there are coefficients $x \in \Q^{1 \times k}$ \st~$f = x \cdot g$.
+%     %
+%     For every input symbol $a \in \Sigma$,
+%     by~\cref{linearly_finite:2} each component of $\deriveleft a g$ is in the linear span of the generators,
+%     and thus there is a matrix $M(a) \in \Q^{k \times k}$ \st~$\deriveleft a g = M(a) \cdot g$.
+%     %
+%     Finally, let $y = g(\e) \in \Q^{k \times 1}$ be the vector of constant terms of the generators.
+%     %
+%     Then $f$ is recognised by the linear representation $\tuple{\Sigma, k, x, y, M}$.
+%     %
+%     \begin{claim*}
+%         We have $g = M \cdot y$.
+%     \end{claim*}
+%     \begin{claimproof}
+%         We proceed by coinduction.
+%         In the base case, we have $g(\e) = y = M(\e) \cdot y$.
+%         %
+%         In the coinductive case we have 
+%         $\deriveleft a g = M(a) \cdot g = M(a) \cdot M \cdot y = (\deriveleft a M) \cdot y = \deriveleft a (M \cdot y)$.
+%     \end{claimproof}
+%     %
+%     Thanks to the claim we have $f = x \cdot g = x \cdot M \cdot y$,
+%     as required.
+% \end{proof}
+%
+\noindent
+Thanks to the lemma above,
+recognisable series are closed under the operations from~\cref{lem:recognisable closure properties}.
+%
+The advantage of linear representations is that they make it possible to show stronger closure properties,
+as we now demonstrate.
+%
+The \emph{reversal} of series $f \in \series \Q \Sigma$ is the series $\reversal f \in \series \Q \Sigma$
+which reverses the order of the letters in the input.
+%
+That is, for every input word $w \in \Sigma^*$ we have $\coefficient w {(\reversal f)} := \coefficient {\reversal w} f$,
+where $\reversal w$ is the word obtained from $w$ by reversing the order of its letters.
+%
+For instance, $\reversal {(a b c)} = c b a$.
+%
+Note that reversal is an endomorphism on the vector space of series.
+%
+\begin{lemma}
+    If $f \in \series \Q \Sigma$ is recognisable, then $\reversal f$ is also recognisable.
+\end{lemma}
+%
+\begin{proof}
+    Let $f$ be recognised by a linear representation $\tuple{\Sigma, k, x, y, M}$.
+    Then its reversal $\reversal f$ is recognised by the linear representation $\tuple{\Sigma, k, \transpose y, \transpose x, \transpose M}$,
+    where $\transpose M$ is the transpose of $M$, and similarly for $\transpose y, \transpose x$.
+    %
+    Indeed, for every input word $w \in \Sigma^*$ we have
+    %
+    $
+        \coefficient w {(\reversal f)}
+        = \coefficient {\reversal w} f
+        = x \cdot M(\reversal w) \cdot y
+        = x \cdot \transpose {(\transpose M(w))} \cdot y
+        = \transpose y \cdot \transpose M(w) \cdot \transpose x
+    $.
+\end{proof}
+%
+\noindent
+Notice that it is not so clear how to prove closure under reversal
+solely based on the definition of linearly finite series.
+%
+Since recognisable series are closed under left derivatives and reversal,
+by double reversal $\deriveright a f = \reversal {(\deriveleft a \reversal f)}$
+we obtain closure under right derivatives as well.
+%
+\begin{corollary}
+    \label{cor:recognisable derive right}
+    If $f$ is recognisable then $\deriveright a f$ is also recognisable.
+\end{corollary}
+% \begin{proof}
+    % Let $f_1, \dots, f_k$ be generators for $f$.
+    % We adjoin new generators $\deriveright a f_i$
+    % for every $a \in \Sigma$ and $1 \leq i \leq k$.
+    % %
+    % Since $f$ is in the linear span of the $f_i$'s,
+    % we have that $\deriveright a f$ is in the linear span of the $\deriveright a f_i$'s,
+    % thus the first condition is satisfied.
+    % %
+    % Now consider $\deriveleft a \deriveright b f_i$.
+    % Since left and right derivatives commute by~\cref{lem:derive left right commutativity},
+    % we have $\deriveleft a \deriveright b f_i = \deriveright b \deriveleft a f_i$.
+    % %
+    % But $\deriveleft a f_i$ is in the linear span of the $f_i$'s.
+    % Since right derivation is linear,
+    % $\deriveright b \deriveleft a f_i$ is in the linear span of the $\deriveright b f_i$'s.
+    % \qedhere
+% \end{proof}
+
+\begin{theorem}
+    The class of recognisable (= linearly finite) series is an effective prevariety.
+    In particular, the commutativity problem is decidable.
+\end{theorem}
+
+% \paragraph{Minimisation of linear representations.}
+% %
+% If a rational series is commutative,
+% then in a minimal linear representation the transition matrices commute pairwise.
+
+\paragraph{Towards more general classes.}
+
+In the next sections~\cref{sec:Hadamard,sec:shuffle,sec:infiltration}
+we will consider classes of series which generalise the recognisable ones.
+%
+In each case, the more general class will be obtained by considering a notion of product of series,
+thus moving from a vector space structure to a more general algebra structure.
+%
+The basic closure properties as in~\cref{lem:recognisable closure properties} will follow from first principles.
+%
+Decidability of the zeroness problem will be obtained as an application of Hilbert finite basis theorem
+for finitely generated polynomial algebras with finitely many variables.
+%
+The price to pay is that such classes of series will not be closed under reversal in general.
+%
+Consequently, in order to show that they are prevarieties
+we will need to show closure under right derivatives by other means.

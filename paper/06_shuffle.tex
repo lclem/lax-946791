@@ -1,0 +1,1098 @@
+%!TEX root main.tex
+\section{Shuffle automata and shuffle-finite series}
+\label{sec:shuffle}
+
+In this section we study a model of computation, called shuffle automata,
+and the class of series they recognise.
+%
+The theoretical development can be carried over in close analogy to the Hadamard case from~\cref{sec:Hadamard}.
+%
+Most of the material comes from our previous work~\cite{Clemente:CONCUR:2024} (to which we refer for more details),
+which here we extend by showing that the commutativity problem is decidable
+and we provide a nontrivial application of it.
+%
+We begin in~\cref{sec:shuffle:preliminaries} with some mathematical preliminaries.
+%
+In~\cref{sec:shuffle automata} we recall the definition of shuffle automata
+(previously called weighted basic parallel processes in~\cite{Clemente:CONCUR:2024})
+and of shuffle-finite series.
+%
+The novel technical result in this section is that the series recognised by shuffle automata
+are effectively closed under right derivatives (\cref{lem:shuffle finite right derivative}),
+and thus constitute an effective prevariety (\cref{thm:shuffle finite prevariety}).
+%
+The closure property is nontrivial,
+since the definition of shuffle automata is asymmetric \wrt~right and left derivatives.
+%
+Together with the \TWOEXPSPACE~algorithm for the equivalence problem~\cite[Theorem 1]{Clemente:CONCUR:2024},
+we obtain that commutativity is decidable, with the same complexity (\cref{thm:shuffle finite commutativity problem}).
+%
+We then present in~\cref{sec:CDA algebra} an application to a class of multivariate power series,
+called \emph{constructible differentially algebraic} (\CDA),
+introduced by Bergeron and Sattler~\cite{BergeronSattler:TCS:1995}.
+%
+We show that their syntax is effective~(\cref{thm:decidability of CDA solvability}),
+which was an open question in our previous work~\cite[Remark 27]{Clemente:CONCUR:2024}.
+
+\subsection{Preliminaries}
+\label{sec:shuffle:preliminaries}
+
+\subsubsection{Differential algebra}
+
+A \emph{derivation} of an algebra $\tuple{A; 0, 1, {+}, {*}}$ is a linear function $\delta : A \to A$
+satisfying the following \emph{Leibniz rule} familiar from calculus:
+%
+\begin{align}
+    \label{eq:Leibniz rule}
+    %\tag{Leibniz rule}
+    \tag{derivation rule}
+    \delta(\alpha * \beta) = \delta \alpha * \beta + \alpha * \delta \beta,
+    \quad\text{for all } \alpha, \beta \in A.
+\end{align}
+%
+In particular, this entails $\delta 1 = 0$ (by taking $\alpha = \beta = 1$).
+%
+A \emph{differential algebra}
+$\tuple{A; 0, 1, {+}, {*}, (\delta_j)_{1\leq j\leq d}}$ is an algebra
+together with finitely many derivations $\delta_1, \dots, \delta_d : A \to A$\-
+\cite{Ritt:DA:1950,Kaplansky:DA:1957,Kolchin:1973}.
+%
+Unlike what is usually done in the literature on differential algebra,
+we do not require the $\delta_i$'s to pairwise commute.
+
+\begin{example}[Differential polynomial algebra]
+    \label{ex:differential polynomial algebra}
+    Consider the algebra of polynomials $\tuple{\poly \Q X; 0, 1, {+}, {\cdot}}$.
+    %
+    A derivation $\Delta : \poly \Q X \to \poly \Q X$ acts on a polynomial by linearity and~\cref{eq:Leibniz rule}.
+    %
+    For instance, $\Delta (X_1 \cdot X_2) = \Delta X_1 \cdot X_2 + X_1 \cdot \Delta X_2$
+    and $\Delta (X_1^5) = 5 \cdot X_1^4 \cdot \Delta X_1$.
+    %
+    It is a basic result in differential algebra that every function $\Delta : X \to \poly \Q X$
+    extends to a unique derivation $\Delta : \poly \Q X \to \poly \Q X$~\cite[Ch.~1, Sec.~2, Ex.~4]{Kaplansky:DA:1957}
+    (\cf~also~\cite[Proposition A.2]{BorealeCollodiGorla:ACMTCL:2024}).
+    %
+    For instance, the familiar partial derivative $\frac \oldpartial  {\oldpartial X_i}$
+    (for short, $\partial {X_i} {}$)
+    is the unique derivation $\Delta$ \st~$\Delta X_i = 1$ and $\Delta X_j = 0$ for $j \neq i$.
+    %
+    If we fix distinguished derivations $\Delta_1, \dots, \Delta_d$,
+    then we obtain the polynomial differential algebra
+    $\tuple{\poly \Q X; 0, 1, {+}, {\cdot}, (\Delta_j)_{1 \leq j \leq d}}$.
+    %
+    Polynomial differential algebras will provide the state space of configurations for shuffle automata.
+    %
+    Other examples of differential algebras will be presented in
+    \cref{sec:shuffle algebra} and \cref{sec:CDA algebra}.
+\end{example}
+
+\subsubsection{Shuffle differential algebra}
+\label{sec:shuffle algebra}
+
+We recall a product operation on series which will be central in the development of this section.
+%
+The \emph{shuffle product} of two series $f \shuffle g$ is defined coinductively by
+(\cf~\cite[Definition 8.1]{BasoldHansenPinRutten:MSCS:2017})
+%
+\begin{align}
+    \tag{${\shuffle}$-$\e$}
+    \label{eq:shuffle:base}
+    \coefficient \e {(f \shuffle g)}
+        &= f_\e \cdot g_\e, \\
+    \tag{${\shuffle}$-$\deriveleft a$}
+    \label{eq:shuffle:step}
+        \deriveleft a (f \shuffle g)
+        &= \deriveleft a f \shuffle g + f \shuffle \deriveleft a g,
+        \quad \forall a \in \Sigma.
+\end{align}
+%
+This is an associative, commutative, and bilinear operation,
+with identity the series $1 \cdot \e$ mapping $\e$ to $1$ and zero everywhere else.
+%
+Shuffle product originates in the work of Eilenberg and MacLane in homological algebra~\cite{EilenbergMacLane:AM:1953},
+and was introduced in automata theory by Fliess under the name of \emph{Hurwitz product}~\cite{Fliess:1974}.
+%
+It is the series analogue of the shuffle product in language theory.
+It finds applications in concurrency theory,
+where it models the \emph{interleaving semantics} of process composition,
+and in control theory,
+where it models the combinatorics of iterated integrals~\cite{Fliess:1981}.
+%
+Intuitively, it models all possible ways in which two sequences can be interleaved.
+%
+%For instance, when we run processes $ab$ and $a$ in parallel we obtain
+%$ab \shuffle a = 2aab + aba$.
+%
+%\begin{align*}
+%    &ab \shuffle a
+%        = a (\deriveleft a (ab \shuffle a)) + b (\deriveleft b (ab \shuffle a)) = \\
+%        &= a (\deriveleft a {(ab)} \shuffle a + ab \shuffle \deriveleft a a) + b (0)
+%        % &= a (\underbrace b_{\deriveleft a f} \shuffle \underbrace a_g + \underbrace{ab}_f \shuffle \underbrace \e_{\deriveleft a g})
+%        = a (b \shuffle a + ab \shuffle \e) = \\
+%        &= a (ba + ab + ab) = 2aab + aba.
+%\end{align*}
+%
+%Thus, there are two executions over input $aab$
+%and one over $aba$.
+
+By~\cref{eq:shuffle:step}, left derivatives $\deriveleft a$ ($a \in \Sigma$) are derivations for the shuffle product,
+and we have thus obtained the \emph{differential shuffle algebra}
+$\series \Q \Sigma_{\shuffle} := \tuple{\series \Q \Sigma; {+}, {\shuffle}, (\deriveleft a)_{a \in \Sigma}}$.
+%
+%This is where the semantics of shuffle automata lives.
+%
+It is worth noting that right derivatives are also derivations of the shuffle algebra.
+This will be useful in the proof of~\cref{lem:shuffle finite right derivative}.
+%
+\begin{restatable}{lemma}{lemRightDerivationShuffleDer}
+    \label{lem:right derivation shuffle derivation}
+    Right derivatives $\deriveright a$ (with $a \in \Sigma$) are shuffle algebra derivations.
+    I.e., they are linear and satisfy Leibniz rule~\cref{eq:Leibniz rule} for the shuffle product:
+    %
+    \begin{align}
+        \tag{${\shuffle}$-$\deriveright a$}
+        \label{eq:derive shuffle right}
+        \deriveright a (f \shuffle g)
+        = \deriveright a f \shuffle g + f \shuffle \deriveright a g,
+        \quad\forall a \in \Sigma.
+    \end{align}
+\end{restatable}
+\begin{proof}
+    We have already observed linearity in~\cref{sec:preliminaries}.
+    Regarding~\cref{eq:derive shuffle right}, we prove it by coinduction.
+    %
+    First of all, the constant term of both sides is the same, since
+    %
+    \begin{align*}
+        \coefficient \e {\deriveright a (f \shuffle g)}
+        &= \coefficient a {(f \shuffle g)} = f_a \cdot g_\e + f_\e \cdot g_a, \text{ and } \\ 
+        \coefficient \e {(\deriveright a f \shuffle g + f \shuffle \deriveright a g)}
+        &= \coefficient \e {(\deriveright a f \shuffle g)} + \coefficient \e {(f \shuffle \deriveright a g)}
+        = \coefficient \e {\deriveright a f} \cdot \coefficient \e g + \coefficient \e f \cdot \coefficient \e \deriveright a g
+        = f_a \cdot g_\e + f_\e \cdot g_a.
+    \end{align*}
+    %
+    The proof is concluded by showing that, for every $b \in \Sigma$,
+    the $b$-left derivative $\deriveleft b$ of both sides is the same:
+    %
+    \begin{align*}
+        \deriveleft b \deriveright a (f \shuffle g)
+        = \deriveleft b (\deriveright a f \shuffle g + f \shuffle \deriveright a g).
+    \end{align*}
+    %
+    We indeed have
+    %
+    \begin{align*}
+        &\deriveleft b \deriveright a (f \shuffle g) = \\
+        &= \deriveright a \deriveleft b (f \shuffle g)
+            && \text{(by~\cref{lem:derive left right commutativity})} \\ 
+        &= \deriveright a (\deriveleft b f \shuffle g + f \shuffle \deriveleft b g)
+            && \text{(by~\cref{eq:shuffle:step})} \\ 
+        &= \deriveright a (\deriveleft b f \shuffle g) + \deriveright a (f \shuffle \deriveleft b g)
+            && \text{(by linearity)} \\
+        &= \deriveright a \deriveleft b f \shuffle g + \deriveleft b f \shuffle \deriveright a g
+        + \deriveright a f \shuffle \deriveleft b g + f \shuffle \deriveright a \deriveleft b g
+            && \text{(by coinduction)} \\
+        &= \deriveleft b \deriveright a f \shuffle g + \deriveleft b f \shuffle \deriveright a g
+        + \deriveright a f \shuffle \deriveleft b g + f \shuffle \deriveleft b \deriveright a g
+            && \text{(by~\cref{lem:derive left right commutativity})} \\
+        &= \deriveleft b (\deriveright a f \shuffle g) + \deriveleft b (f \shuffle \deriveright a g)
+            && \text{(by~\cref{eq:shuffle:step})} \\ 
+        &= \deriveleft b (\deriveright a f \shuffle g + f \shuffle \deriveright a g)
+            && \text{(by linearity)}. \qedhere
+    \end{align*}
+\end{proof}
+
+\subsection{Shuffle automata, shuffle-finite series, and their commutativity problem}
+\label{sec:shuffle automata}
+
+In this section we recall the definition of shuffle automata, the series they recognise,
+and study their semantical and computational properties.
+%
+Shuffle automata have been introduced in~\cite{Clemente:CONCUR:2024}
+under the name of \emph{weighted basic parallel processes},
+a simultaneous generalisation of weighted finite automata
+and a model of concurrency called \emph{basic parallel processes}~\cite{Esparza:FI:1997}.
+%
+For reasons of uniformity with the rest of the paper,
+we shell refer to them as shuffle automata.
+%
+Shuffle automata find applications also in control theory~\cite{Clemente:control:arXiv:2025},
+however we will not explore this topic here.
+
+\subsubsection{Shuffle automata}
+\label{sec:shuffle automata:definition}
+
+Syntactically, a \emph{shuffle automaton} $\AA = \tuple{\Sigma, X, F, \Delta}$
+is identical to a Hadamard automaton~(\cf~\cref{sec:Hadamard automata}),
+however the semantics is different:
+%
+The transition function $\Delta_a : X \to \poly \Q X$ (for $a \in \Sigma$)
+is extended to a unique derivation $\Delta_a : \poly \Q X \to \poly \Q X$
+of the differential polynomial algebra of configurations (\cf~\cref{eq:Leibniz rule}).
+%
+We have seen in~\cref{ex:differential polynomial algebra} that such an extension exists and is unique.
+The extension to all finite words and the definition of the semantics of a configuration are unchanged
+(\cf~\cref{eq:semantics}).
+%
+The series recognised by the shuffle automaton $\AA$ is $\Asem \AA {X_1}$.
+
+\begin{example}
+    \label{ex:binomial shuffle automaton}
+    Consider a binary alphabet $\Sigma = \set{a_1, a_2}$
+    and three nonterminals $X = \set{X_1, X_2, X_3}$.
+    %
+    Let the output function be $F X_1 := 1$ and $F X_2 := F X_3 := 0$,
+    and consider transitions
+    %
+    \begin{align*}
+        \arraycolsep=1pt
+        \begin{array}{rl}
+            \Delta_{a_1} X_1 &:= X_1 \cdot (1 + X_3), \\
+            \Delta_{a_2} X_1 &:= X_1 \cdot X_2, \\
+        \end{array}
+        \quad 
+        \begin{array}{rl}
+            \Delta_{a_1} X_2 &:= 1, \\
+            \Delta_{a_2} X_2 &:= 0, \\
+        \end{array}
+        \quad 
+        \begin{array}{rl}
+            \Delta_{a_1} X_3 &:= 0, \\
+            \Delta_{a_2} X_3 &:= 1.
+        \end{array}
+    \end{align*}
+    %
+    The run starting from $X_1$ and reading input $w = a_1 a_2$ is
+    %
+    \begin{align*}
+        X_1
+            &\goesto {a_1} X_1 \cdot (1 + X_3)
+            \goesto {a_2} \Delta_{a_2} (X_1 \cdot (1 + X_3))
+            = \Delta_{a_2} X_1 \cdot (1 + X_3) + X_1 \cdot \Delta_{a_2} (1 + X_3)
+            = X_1 \cdot X_2 \cdot (1 + X_3) + X_1.
+    \end{align*}
+    %
+    and thus $\sem {X_1}_{a_1 a_2} = F (X_1 \cdot X_2 \cdot (1 + X_3) + X_1) = 1$.
+    %
+    We will see in~\cref{ex:binomial CDA} that the series recognised by $X_1$
+    maps $w$ to ${n \choose k} \cdot k!$ where $n := \multiplicity {a_1} w$ and $k := \multiplicity {a_2} w$.
+\end{example}
+
+We now recall some basic properties of shuffle automata.
+%
+A shuffle automaton endows the algebra of configurations
+with the structure of a differential algebra
+$\tuple{\poly \Q X; 0, 1, +, \cdot, (\Delta_a)_{a \in \Sigma}}$.
+%
+The following connection with the differential algebra of series
+bears similarity to~\cref{lem:Hadamard automata - properties of the semantics}.
+%
+\begin{restatable}
+    [Properties of the semantics~\protect{\cite[Lemma 8 + Lemma 9]{Clemente:CONCUR:2024}}]
+    {lemma}{lemPropertiesofSemanticsOfShuffleAutomata}
+    \label{lem:shuffle automata - properties of the semantics}
+    The semantics of a shuffle automaton is a homomorphism from
+    the differential algebra of polynomials
+        $\tuple{\poly \Q X; +, \cdot, (\Delta_a)_{a \in \Sigma}}$
+    to the differential shuffle algebra of series 
+        $\tuple{\series \Q \Sigma; +, \shuffle, (\deriveleft a)_{a \in \Sigma}}$.
+    %
+    In other words, $\sem 0 = \zero$, $\sem 1 = 1 \cdot \e$,
+    and, for all configurations $\alpha, \beta \in \poly \Q X$,
+    %
+    \begin{align}
+        \label{eq:shuffle:sem:scalar-product}
+        \sem {c \cdot \alpha}
+            &= c \cdot \sem \alpha 
+            && \forall c \in \Q, \\
+        \label{eq:shuffle:sem:sum}
+            \sem {\alpha + \beta}
+            &= \sem \alpha + \sem \beta, \\
+        \label{eq:shuffle:sem:product}
+            \sem {\alpha \cdot \beta}
+            &= \sem \alpha \shuffle \sem \beta, \\
+        \label{eq:shuffle:sem:derivation}
+        \sem {\Delta_a \alpha}
+            &= \deriveleft a \sem \alpha
+            && \forall a \in \Sigma.
+    \end{align}
+\end{restatable}
+
+\subsubsection{Shuffle-finite series}
+\label{sec:shuffle-finite series}
+
+Shuffle automata are data structures representing series.
+%
+The same class of series admits a semantic presentation,
+which we find more convenient to work with and which we now recall.
+%
+For series $f_1, \dots, f_k \in \series \Q \Sigma$,
+we denote by $\poly \Q {f_1, \dots, f_k}_{\shuffle}$ the smallest shuffle algebra containing $f_1, \dots, f_k$.
+%
+Algebras of this form are called~\emph{finitely generated}, with \emph{generators} $f_1, \dots, f_k$.
+%
+When it is closed under the derivations $\deriveleft a$ (for all $a \in \Sigma$),
+it is called a \emph{differential shuffle algebra}.
+%
+A series $f \in \series \Q \Sigma$ is \emph{shuffle finite}~\cite[Section 2.4]{Clemente:CONCUR:2024}
+if it belongs to a finitely generated differential shuffle algebra
+(note the analogy with Hadamard-finite series, \cf~\cref{def:Hadamard finite}).
+%
+In practice, we will be using the following equivalent definition of shuffle finiteness.
+%
+\begin{lemma}[\protect{\cite[Lemma 39]{Clemente:WBPP:arXiv:2024}}]
+    \label{lem:shuffle finite:characterisation}
+    A series $f \in \series \Q \Sigma$ is shuffle finite iff
+    there are generators $f = f_1, \dots, f_k \in \series \Q \Sigma$ \st:
+    %
+    \begin{enumerate}
+        \item $f \in \poly \Q {f_1, \dots, f_k}_{\shuffle}$, and
+        \item $\deriveleft a f_i \in \poly \Q {f_1, \dots, f_k}_{\shuffle}$,
+        for all $a \in \Sigma$ and $1 \leq i \leq k$.
+    \end{enumerate}
+\end{lemma}
+%
+\noindent
+Thanks to this characterisation, we prove that shuffle-finite series coincide
+with the series recognised by shuffle automata~\cite[Theorem 12]{Clemente:CONCUR:2024},
+and constitute an effective differential algebra~\cite[Lemma 10]{Clemente:CONCUR:2024}.
+%
+We complete the picture by observing that they are effectively closed under right derivatives.
+%
+\begin{lemma}
+    \label{lem:shuffle finite right derivative}
+    If $f$ is shuffle finite, then $\deriveright a f$ is also effectively shuffle finite.
+\end{lemma}
+%
+\noindent
+The definition of shuffle-finite series is asymmetric
+since it is biased towards left derivatives,
+therefore closure under right derivatives is nontrivial.
+%
+Nonetheless, the technology of shuffle-finite series,
+together with the fact that left and right derivatives commute~(\cref{lem:derive left right commutativity}),
+gives a rather short proof of this fact.
+% Thanks to the lemma and~\cite[Theorem 12]{Clemente:CONCUR:2024},
+% series recognised by shuffle automata are closed under right derivatives.
+% %
+% We do not know how to establish this without shuffle-finite series,
+% since it is not clear how transitions for the new automaton should be defined.
+%
+\begin{proof}
+    The proof is similar to the one of~\cref{lem:Hadamard closure properties}.
+    Let $f$ be shuffle finite and let and $f_1, \dots, f_k$ be the generators provided by~\cref{lem:shuffle finite:characterisation}.
+    By the first property, $f \in A := \poly \Q {f_1, \dots, f_k}_{\shuffle}$.
+    %
+    Consider the shuffle algebra $B$ generated by the $f_i$'s and their right derivatives,
+    %
+    %\begin{align*}
+        $B := \poly \Q {f_1, \dots, f_k, \deriveright a f_1, \dots, \deriveright a f_k}_{\shuffle}$.
+    %\end{align*}
+    %
+%    The following is proved by structural induction.
+    %
+    \begin{claim*}
+        For every series $g \in A$, we have $\deriveright a g \in B$.
+    \end{claim*}
+    \begin{proof}
+        We proceed by induction on polynomial expressions.
+        %
+        In the base case, we have $g = f_i \in A$
+        and there is nothing to prove.
+        %
+        In the case $g = g_1 + g_2$ with $g_1, g_2 \in A$,
+        we have $\deriveright a g = \deriveright a g_1 + \deriveright a g_2$
+        and the claim follows from the inductive assumption
+        applied to $\deriveright a g_1, \deriveright a g_2$.
+        %
+        Finally, consider $g = g_1 \shuffle g_2$ with $g_1, g_2 \in A$.
+        By the product rule for right derivatives~\cref{eq:derive shuffle right},
+        we have $\deriveright a g = \deriveright a g_1 \shuffle g_2 + g_1 \shuffle \deriveright a g_2$.
+        %
+        By the inductive assumption, $\deriveright a g_1, \deriveright a g_2 \in B$,
+        and thus the same holds for $\deriveright a g$,
+    \end{proof}
+    %
+    Since by assumption $f \in A$,
+    by the claim above we have $\deriveright a f \in B$.
+    %
+    We need to show that $B$ is differential,
+    which, by the second point of~\cref{lem:shuffle finite:characterisation},
+    amounts to prove that left derivatives of generators are themselves in $B$.
+    %
+    Left derivatives of the old generators $f_i$ are in $A$ (since $A$ is differential by assumption),
+    and thus they are in the larger $B$.
+    %
+    It remains to show the same for the new generators $\deriveright a f_i$.
+    %
+    So consider $\deriveleft b \deriveright a f_i$ for an arbitrary $b \in \Sigma$
+    and we have to show that it is in $B$.
+    %
+    By~\cref{lem:derive left right commutativity} left and right derivations commute,
+    and thus we have $\deriveleft a \deriveright b f_i = \deriveright b \deriveleft a f_i$.
+    %
+    But by assumption $\deriveleft a f_i \in A$,
+    therefore by the claim $\deriveright b \deriveleft a f_i \in B$, as required.
+\end{proof}
+
+We obtain the following synthesis
+of the above-mentioned results from~\cite{Clemente:CONCUR:2024}
+and~\cref{lem:shuffle finite right derivative}.
+% are conveniently brought together by the notion of effective prevarieties.
+%
+\begin{theorem}
+    \label{thm:shuffle finite prevariety}
+    The class of shuffle-finite series is an effective prevariety.
+\end{theorem}
+%
+\noindent
+From~\cref{thm:commutativity for effective prevarieties,thm:shuffle finite prevariety},
+it follows that the commutativity problem reduces efficiently to the equality problem.
+%
+Moreover, it is easy to see that shuffle-finite series are closed under anti-derivatives
+(same proof as in~\cref{lem:recognisable closure properties}),
+and the new generators are computable in polynomial time.
+%
+Consequently, commutativity and equality are efficiently inter-reducible.
+%
+Since the equality problem for shuffle-finite series is in~\TWOEXPSPACE~\cite[Theorem 1]{Clemente:CONCUR:2024},
+the same complexity upper bound applies to the commutativity problem,
+which is the main result of the section.
+%
+\begin{theorem}
+    \label{thm:shuffle finite commutativity problem}
+    The commutativity problem for shuffle-finite series (equivalently, series recognised by shuffle automata) is decidable in~\TWOEXPSPACE.
+\end{theorem}
+%
+\noindent
+As directly inherited from the equality problem,
+the complexity upper bound is doubly exponential in the number of generators $k$.
+
+\subsection{Application: Multivariate constructible differentially algebraic power series}
+\label{sec:CDA algebra}
+
+In this section, we recall the definition of a rich class of multivariate series in commuting indeterminates
+called \emph{constructible differentially algebraic} (\CDA).
+%
+Based on~\cref{thm:shuffle finite commutativity problem},
+we show that they have an effective syntax,
+addressing a problem left open in~\cite[Remark 27]{Clemente:CONCUR:2024}.
+%
+We begin in~\cref{sec:differential power series algebra} with some preliminaries,
+then in~\cref{sec:CDA} we recall the definition of~\CDA,
+and finally we show effectiveness in~\cref{sec:solvability of CDA equations}.
+
+\subsubsection{Differential power series algebra}
+\label{sec:differential power series algebra}
+
+In the rest of the section, fix a dimension $d \in \N_{\geq 1}$
+and consider $d$ pairwise commuting \emph{independent variables} $x = \tuple{x_1, \dots, x_d}$.
+%
+For a multi-index $n = \tuple{n_1, \dots, n_d} \in \N^d$,
+we write $x^n$ for $x_1^{n_1} \cdots x_d^{n_d}$,
+and $n!$ for $n_1! \cdots n_d!$.
+%
+An \emph{exponential multivariate power series} (in commuting variables) is a function $f : \N^d \to \Q$,
+customarily written as $f = \sum_{n \in \N^d} f_n \cdot \frac {x^n} {n!}$
+where $f_n \in \Q$ is the coefficient of term $x^n$.
+%
+We write the set of power series as $\powerseries \Q x$.
+%
+For example $1 + x_1 + x_1^2 + \cdots = \frac 1 {1 - x_1}$ is a power series.
+%
+%Polynomials $\poly \Q x$ consist precisely of those power series
+%with \emph{finite support}, \ie, with $f_n = 0$ almost everywhere.
+%
+We endow the set of power series with the structure of a vector space
+with zero $0$, scalar product $c \cdot f$, and addition $f + g$
+all defined element-wise.
+%
+Therefore, the vector spaces of power series and number sequences (\cf~\cref{sec:shift algebra}) are isomorphic.
+However, multiplication is different.
+%
+While multiplication of number sequences is element-wise (Hadamard product),
+for power series we define multiplication in the same way as for multiplication of polynomials.
+%
+In other words, if $f = \sum_{n \in \N^d} f_n \cdot \frac {x^n} {n!}$ and $g = \sum_{k \in \N^d} g_k \cdot \frac {x^k} {k!}$,
+then 
+%
+\begin{align*}
+    f \cdot g
+        = \sum_{n, k \in \N^d} f_n g_k \cdot \frac {x^{n + k}} {n! k!}
+        = \sum_{m \in \N^d} \left(\sum_{n + k = m} {m \choose n, k} f_n g_k\right) \cdot \frac {x^m} {m!},
+\end{align*}
+%
+where ${m \choose n, k}$ denotes the multivariate binomial coefficient $\frac {m!}{n!k!}$.
+%
+At the level of sequences of coefficients, the formula above illustrates the the product of polynomials
+corresponds to the binomial convolution product.
+%
+Finally, for every $1 \leq j \leq d$ the \emph{$j$-th partial derivative} $\partial {x_j} {}$
+maps the power series $f$ to the power series
+$\partial {x_j} f = \sum_{n \in \N^d} f_{n+e_j} \frac {x^n} {n!}$.
+%
+Notice that $\partial {x_j} {}$ is a derivation with respect to the product of power series,
+since it satisfies the familiar Leibniz rule from calculus~(\cf~\cref{eq:Leibniz rule}):
+%
+\begin{align*}
+    \partial {x_j} (f \cdot g) = (\partial {x_j} f) \cdot g + f \cdot (\partial {x_j} g).
+\end{align*}
+%
+For example, $\partial {x_1} {\frac 1 {1 - x_1}} = \frac 1 {(1 - x_1)^2}$.
+%
+We have thus defined the \emph{differential power series algebra}
+$\tuple{\powerseries \Q x; 0, 1, +, \cdot, (\partial {x_j})_{1 \leq j \leq d}}$.
+%
+Notice that in this case, unlike in the case of the differential shuffle series algebra in \cref{sec:shuffle algebra},
+the derivatives are pairwise commuting
+$\partial {x_j} {} \circ \partial {x_h} {} = \partial {x_h} {} \circ \partial {x_j} {}$.
+%
+The differential power series algebra will constitute the semantic background
+for the developments in the rest of the section.
+
+\subsubsection{\CDA~power series}
+\label{sec:CDA}
+
+Let $y$ denote a tuple of commuting indeterminates $y = \tuple{y_1, \dots, y_k}$.
+%
+A power series $f \in \powerseries \Q x$ is~\CDA\-
+\cite{BergeronReutenauer:EJC:1990,BergeronSattler:TCS:1995}
+if there exist $k \in \N_{\geq 1}$
+and auxiliary power series $f_1, \dots, f_k \in \powerseries \Q x$ with $f = f_1$
+satisfying a system of polynomial partial differential equations
+%
+\begin{align}
+    \label{eq:CDA}
+    \partial {x_j} f_i
+        = p^{(j)}_i(f_1, \dots, f_k),
+        \quad \forall 1 \leq i \leq k, 1 \leq j \leq d,
+\end{align}
+%
+where $p^{(j)}_i \in \poly \Q y$
+for all $1 \leq i \leq k$ and $1 \leq j \leq d$.
+%
+We call systems of the form above~\emph{systems of autonomous \CDA~equations}.
+%
+\begin{remark}[Autonomous \vs~non-autonomous]
+    \label{rem:nonautonomous CDA}
+    We could allow the \rhs~of equations to contain the independent variables $x_j$'s,
+    \ie, $p^{(j)}_i \in \poly \Q {x, y}$,
+    obtaining \emph{non-autonomous} equations.
+    %
+    This does not increase expressiveness
+    since we can introduce fresh power series $g_j := x_j$
+    together with equations $\partial {x_j} g_j = 1$,
+    $\partial {x_h} g_j = 0$ for $h \neq j$,
+    and initial conditions $g_j(0) = 0$.
+    %
+    For this reason, we focus on autonomous equations.
+\end{remark}
+%
+\noindent
+\CDA~power series are commonly found in combinatorics.
+For example, they include all algebraic power series
+(\ie, power series solutions of polynomial equations~\cite[Chapter III.16]{KuichSalomaa:1986},
+\eg, $\sqrt{1 - x^2}$),
+the exponential power series $e^x$,
+the trigonometric power series $\sin x, \cos x$, and many others.
+%
+See \cite{BergeronReutenauer:EJC:1990,BergeronSattler:TCS:1995} and \cite[Sec.~3]{Clemente:CONCUR:2024}
+for additional examples.
+%
+Additionally, \CDA~power series are closed under natural operations,
+such as scalar product, addition, multiplication, differentiation, and composition
+(\cf~\cite[Lemma 21]{Clemente:CONCUR:2024}).
+%
+They find applications in combinatorics,
+since the generating functions of a large class of finite structures,
+called constructible species, are \CDA~\cite[Theorem 31]{Clemente:CONCUR:2024}.
+%
+Finally, the \CDA~equivalence problem is decidable in~\TWOEXPTIME,
+thus of elementary complexity~\cite[Theorem 3]{Clemente:CONCUR:2024};
+this should be contrasted with polyrec sequences,
+for which the best upper bound is Ackermannian~\cref{sec:polyrec}.
+
+\begin{example}[Binomial coefficients]
+    \label{ex:binomial CDA}
+    Consider the mixed generating power series of the binomial coefficients
+    $f_1 := \sum_{n, k \in \N} {n \choose k} \cdot \frac {x_1^n} {n!} \cdot x_2^k = e^{x_1 \cdot (1 + x_2)}$.
+    %
+    By introducing auxiliary power series $f_2 := x_1$ and $f_3 := x_2$,
+    we obtain the \CDA~equations:
+    \begin{align*}
+        % \label{eq:binomial CDA}
+        \arraycolsep=1pt
+        \begin{array}{rl}
+            \partial {x_1} f_1 &= f_1 \cdot (1 + f_3), \\
+            \partial {x_2} f_1 &= f_1 \cdot f_2, \\
+        \end{array}
+        \qquad
+        \begin{array}{rl}
+            \partial {x_1} f_2 &= 1, \\
+            \partial {x_2} f_2 &= 0, \\
+        \end{array}
+        \qquad
+        \begin{array}{rl}
+            \partial {x_1} f_3 &= 0, \\
+            \partial {x_2} f_3 &= 1.
+        \end{array}
+    \end{align*}
+\end{example}
+
+\begin{example}[Stirling numbers of the second kind~\protect{\cite[Example 8]{BergeronSattler:TCS:1995}}]
+    \label{ex:Stirling second kind CDA}
+    Consider the mixed generating power series of the Stirling numbers of the second kind
+    $f_1 = \sum_{n, k \in \N} S_{n, k} \cdot \frac {x_1^n} {n!} \cdot x_2^k = e^{x_1 \cdot (e^{x_2} - 1)}$.
+    By introducing auxiliary power series $f_2 = e^{x_2}$ and $f_3 = x_1$
+    we obtain the following \CDA~equations
+    %
+    \begin{align*}
+        % \label{eq:Stirling CDA}
+        \arraycolsep=1pt
+        \begin{array}{rl}
+            \partial {x_1} f_1 &= f_1 \cdot (f_2 - 1), \\
+            \partial {x_2} f_1 &= f_1 \cdot f_2 \cdot f_3, \\
+        \end{array}
+        \ 
+        \begin{array}{rl}
+            \partial {x_1} f_2 &= 0, \\
+            \partial {x_2} f_2 &= f_2, \\
+        \end{array}
+        \ 
+        \begin{array}{rl}
+            \partial {x_1} f_3 &= 1, \\
+            \partial {x_2} f_3 &= 0.
+        \end{array}
+    \end{align*}
+\end{example}
+
+\noindent
+We will come back to these examples in the following section.
+
+\subsubsection{Solvability in power series of \CDA~equations}
+\label{sec:solvability of CDA equations}
+
+The definition of~\CDA~power series relies on the \emph{promise}
+that the system differential equations~\cref{eq:CDA} does have a power series solution starting at a given initial value.
+%
+Deciding whether this is the case is a nontrivial problem,
+left open in~\cite[Remark 27]{Clemente:CONCUR:2024}.
+%
+\begin{problem}[\CDA~solvability problem]
+    \label{problem:CDA solvability}
+    The \emph{solvability problem} for \CDA~equations
+    takes as input a set of \CDA~equations~\cref{eq:CDA}
+    together with an initial condition $c \in \Q^k$,
+    and it amounts to decide whether there is a power series solution $f \in \powerseries \Q x^k$ 
+    extending the initial condition $f(0) = c$.
+\end{problem}
+%
+\noindent
+We remark that the initial condition is part of the input to the solvability problem.
+In the univariate case $d = 1$,
+by the classic Picard-Lindelöf theorem~\cite[Theorem 3.1]{CoddingtonLevinson:1984},
+\emph{every} initial condition extends to a solution,
+and thus the solvability problem is trivial.
+%
+The multivariate case $d \geq 2$ is nontrivial,
+as the following examples demonstrate.
+
+\begin{example}[Unsolvable systems]
+    \label{ex:CDA unsolvable system}
+    A \CDA~system may not have any power series solution at all when $d \geq 2$,
+    regardless of the initial condition.
+    For instance, the following equations are unsatisfiable in power series:
+    %
+    \begin{align*}
+        \arraycolsep=1pt
+        \begin{array}{rl}
+            \partial {x_1} f &= 0, \\
+            \partial {x_2} f &= g,
+        \end{array}
+        \quad \text{and} \quad
+        \begin{array}{rl}
+            \partial {x_1} g &= 1, \\
+            \partial {x_2} g &= 1.
+        \end{array}
+    \end{align*}
+    %
+    The equation $\partial {x_1} g = 1$ implies $g = x_1 + c(x_2)$ for some $c \in \powerseries \Q {x_2}$,
+    and $\partial {x_2} g = 1$ implies $g = x_2 + d(x_1)$ for some $d \in \powerseries \Q {x_1}$.
+    %
+    Taken together, we have $g = a + x_1 + x_2$ for some $a \in \Q$.
+    %
+    The equation $\partial {x_1} f = 0$ implies $f \in \powerseries \Q {x_2}$,
+    and thus $\partial {x_2} f = g \in \powerseries \Q {x_2}$, which is a contradiction.
+\end{example}
+
+\begin{example}[Sensitivity to the inital condition]
+    \label{rem:not uniformably solvable}
+    Existence of power series solutions
+    may depend on the initial value when $d \geq 2$.
+    %
+    % By reinterpreting~\cref{ex:recognisable series}, % as~\CDA~equations we have:
+    Consider equations
+    %
+    \begin{align*}
+        \arraycolsep=1pt
+        \begin{array}{rl}
+            \partial {x_1} f &= f+g, \\
+            \partial {x_2} f &= 0,
+        \end{array}
+        \quad \text{and} \quad
+        \begin{array}{rl}
+            \partial {x_1} g &= 0, \\
+            \partial {x_2} g &= g.
+        \end{array}
+    \end{align*}
+    %
+    Thus $f \in \powerseries \Q {x_1}$,
+    and $g = a \cdot e^{x_2 + b} \in \powerseries \Q {x_2}$, for some $a, b \in \Q$.
+    %
+    Since $g = \partial {x_1} f - f \in \powerseries \Q {x_2}$,
+    there are no solutions with $g(0) = a \cdot e^b \neq 0$.
+    %
+    When $g(0) = 0$ (iff $a = 0$), we have the family of solutions
+    $g = 0$ and $f = c \cdot e^{{x_1}+d}$ for every $c, d \in \Q$.
+\end{example}
+
+We now remark that solvability in power series of systems of polynomial partial differential equations,
+not necessarily in the special \CDA{} format, is undecidable.
+%
+This should be compared to the analogous undecidability result about systems of polynomial difference equations
+(\cref{rem:undecidability of polynomial difference equations}).
+%
+While undecidability for sequences was based on tiling problems,
+for differential equations it is based on diophantine equations.
+
+\begin{remark}
+    \label{rem:undecidability of solvability}
+    % So for instance $\partial {x_2} y = \tuple{\partial {x_2} {y_1}, \dots, \partial {x_2} {y_k}}$.
+    % %
+    % A system of \emph{algebraic partial differential equations}
+    % is a system of polynomial partial differential equations of the form
+    % %
+    % \begin{align}
+    %     \label{eq:APDE}
+    %     p_i(x, y, \dots, \frac {\oldpartial^{i_1 + \cdots + i_d} y} {\oldpartial x_1^{i_1} \cdots \oldpartial x_d^{i_d}}, \dots) = 0,
+    %     \quad 1 \leq i \leq k,
+    % \end{align}
+    % %
+    % where $p_i$ is a polynomial over $\Q$ with over a suitable number of indeterminates.
+    % %
+    % A system of algebraic partial differential equations as in~\cref{eq:APDE}
+    % is \emph{solvable in power series}
+    % if there are power series $f_1, \dots, f_k \in \powerseries Q x$
+    % \st~replacing every $y_i$ with $f_i$ in~\cref{eq:APDE} satisfies every equation.
+    % %
+    % A seminal result of Denef and Lipshitz~\cite[Theorem 3.1]{DenefLipshitz:1984}
+    % shows that solvability in power series for algebraic differential equations is decidable in the univariate case $d = 1$,
+    % that is for polynomial \emph{ordinary} differential equations.
+    %
+    % In the same paper, it is shown in the general $d$-variate case
+    A seminal result of Denef and Lipshitz shows that
+    solvability in power series for polynomial partial differential equations is \emph{undecidable}~\cite[Theorem 4.11]{DenefLipshitz:1984}.
+    %
+    In fact, this holds already for a \emph{single}, \emph{linear} partial differential equation in \emph{one unknown},
+    with polynomial coefficients in $\poly \Q x$.
+    %
+    In order to gain insight into the shape of the undecidable equations,
+    we present their reduction.
+    %
+    Let $P(y_1, \dots y_d) \in \poly \Z {y_1, \dots, y_d}$
+    be a multivariate polynomial with integer coefficients.
+    %
+    Consider the non-autonomous differential equation
+    %
+    \begin{align}
+        \label{eq:undecidable linear PDE}
+        P(x_1 \cdot \partial {x_1} {}, \dots, x_d \cdot \partial {x_d} {}) f 
+        = \frac 1 {1 - x_1} \cdots \frac 1 {1 - x_d},
+    \end{align}
+    %
+    with initial condition $f(0) = P(0)^{-1}$ (assuming $P(0) \neq 0$).
+    %
+    For example, if $P(y_1, y_2) = 1 - 2 \cdot y_1 + y_2^2$
+    then we would get the equation
+    $(1 - 2 \cdot x_1 \cdot \partial {x_1} {} + (x_2 \cdot \partial {x_2} {})^2) f = \frac 1 {1 - x_1} \frac 1 {1 - x_2}$
+    where $(x_2 \cdot \partial {x_2} {})^2$ is the derivation $x_2 \cdot \partial {x_2} {}$ applied twice.
+    %
+    Equation~\cref{eq:undecidable linear PDE} has a solution in power series
+    iff $P = 0$ has no nonnegative integer solutions:
+    %
+    Indeed, the \rhs~is just $\sum_{n \in \N^d} x^n$
+    and if $f \in \powerseries \C x$ is the power series $f = \sum_{n \in \N^d} f_n \cdot x^n$,
+    then the \lhs~equals $\sum_{n \in \N^d} f_n \cdot P(n) \cdot x^n$.
+    %
+    As a consequence of Hilbert 10th problem (\cf~\cite{Matijasevic:2003}),
+    whether $P = 0$ has a nonnegative integer solution is undecidable 
+    (already for $d = 9$),
+    and thus solvability in power series for \cref{eq:undecidable linear PDE} is undecidable as well.
+\end{remark}
+
+Note that~\cref{eq:undecidable linear PDE} is not in the \CDA~format.
+%
+One reason is that it is non-autonomous since it contains occurrences of the independent variables $x_j$'s.
+This is inessential and it can be addressed by~\cref{rem:nonautonomous CDA}.
+%
+% In fact, we can replace $x_j$ with a fresh dependent variable $g_j$
+% together with differential equations $\partial {x_j} g_j = 1$, $\partial {x_h} g_j = 0$ for $h \neq j$,
+% and impose the initial condition $g_j(0) = 0$.
+%
+Another reason concerns the occurrence of the rational power series $\frac 1 {1 - x_j}$ on the \rhs~of~\cref{eq:undecidable linear PDE},
+however this can be avoided by multiplying both sides of the equation by $(1 - x_1) \cdots (1 - x_d)$.
+%    can be replaced by a fresh dependent variable $h_j$
+%    with differential equations $\partial {x_j} h_j = h_j^2$, $\partial {x_h} h_j = 0$ for $h \neq j$,
+%    and initial condition $h_j(0) = 1$.
+%
+The last reason is more fundamental:
+Both $\partial {x_j} f$ and $\partial {x_h} f$ (with $j \neq h$) appear in the same equation,
+which in \CDA~is not allowed.
+%
+Consequently, in order to decide~\cref{problem:CDA solvability} we need to exploit the~\CDA~format.
+%
+To this end we develop a connection between
+power series solutions of \CDA~equations~\cref{eq:CDA} and shuffle automata,
+in a way analogous to the development in~\cref{sec:consistency of polyrec equations}
+of a connection between multivariate polyrec sequences and Hadamard automata.
+
+% \subsubsection{\CDA~solvability and commutative shuffle-finite series}
+% \label{sec:CDA solvability and commutative shuffle-finite series}
+
+Consider an alphabet of noncommuting indeterminates $\Sigma = \set {a_1, \dots, a_d}$.
+%
+We observe that the differential algebra of power series
+and the differential shuffle algebra of \emph{commutative} series,
+%
+\begin{align*}
+    \tuple{\powerseries \Q x; 0, 1, {+}, {\cdot}, (\partial {x_j})_{1 \leq j \leq d}},
+    \quad\text{resp.,}\quad
+    \tuple{\commseries \Q \Sigma; \zero, 1 \cdot \e, {+}, {\shuffle}, (\deriveleft {a_j})_{1 \leq j \leq d}}
+\end{align*}
+%
+are isomorphic.
+%
+The isomorphism maps a commutative series $f \in \commseries \Q \Sigma$
+to the power series $\widetilde f = \sum_{n \in \N^d} \widetilde f_n \cdot \frac {x^n} {n!} \in \powerseries \Q x$
+with coefficients $\widetilde f_{n_1, \dots, n_d} := f(a_1^{n_1} \cdots a_d^{n_d})$ for every $n_1, \dots, n_d \in \N$.
+%
+In other words, this is a bijective mapping preserving the algebraic and differential structure, \ie,
+$\widetilde \zero = 0$, $\widetilde {1 \cdot \e} = 1$, and
+%the function mapping a commutative series $f$ to a power series $\widetilde f$ is bijective,
+% and it satisfies the following equations:
+%
+\begin{align}
+    \label{eq:comm iso}
+    \begin{array}{rl}
+    \widetilde {c \cdot f}
+        &= c \cdot \widetilde f, \\
+%            &&\text{for all } c \in Q, \\
+    \widetilde {f + g}
+        &= \widetilde f + \widetilde g,
+    \end{array}
+    \qquad
+    \begin{array}{rl}
+    \widetilde {f \shuffle g}
+        &= \widetilde f \cdot \widetilde g, \\
+    \widetilde {\deriveleft {a_j} f}
+        &= \partial {x_j} {\widetilde f},
+            % &&\text{for all } 1 \leq j \leq d,
+    \end{array}
+\end{align}
+%
+for all $f, g \in \commseries \Q \Sigma$, $c \in \Q$, and $1 \leq j \leq d$.
+%
+For a system of \CDA~equations~\cref{eq:CDA},
+together with an initial condition $c = (c_1, \dots, c_k) \in \Q^k$,
+we construct its \emph{companion shuffle automaton} $\tuple{\Sigma, X, F, \Delta}$,
+which has nonterminals $X = \tuple{X_1, \dots, X_k}$,
+output function $F X_i := c_i$ for all $1 \leq i \leq k$,
+and transitions
+%
+\begin{align}
+    \label{eq:companion shuffle automaton}
+    \Delta_{a_j} X_i := p^{(j)}_i(X_1, \dots, X_k),
+    \quad \forall 1 \leq i \leq k, 1 \leq j \leq d.
+\end{align}
+%
+Let $f_i := \sem {X_i}$ be the series recognised by nonterminal $X_i$ of the automaton, for all $1 \leq i \leq k$,
+and write $f = \tuple{f_1, \dots, f_k}$.
+%
+The following lemma provides a characterisation of power series solvability of~\cref{eq:CDA}
+in terms of the series recognised by the shuffle automaton.
+%
+\begin{lemma}
+    \label{lem:CDA solvability}
+    The initial condition $c$ extends to a power series solution of the \CDA~equations~\cref{eq:CDA}
+    if, and only if, $f$ is a tuple of commutative series.    
+\end{lemma}
+%
+\begin{proof}
+    On the one hand,
+    if $f$ is a tuple of commutative series with initial condition $\coefficient \e f = c$ solving~\cref{eq:companion shuffle automaton},
+    then, by following the isomorphism,
+    $\widetilde f \in \powerseries \Q x^k$
+    is a tuple of power series solutions of~\cref{eq:CDA} with initial condition $f(0) = c$.
+    %
+    Indeed, by the properties of the semantics of shuffle automata~(\cref{lem:shuffle automata - properties of the semantics}),
+    component $f_i$ satisfies differential equations
+    %
+    \begin{align*}
+        % \label{eq:companion shuffle automaton}
+        \deriveleft {a_j} f_i = p^{(j)}_i(f_1, \dots, f_k),
+        \quad \forall 1 \leq i \leq k, 1 \leq j \leq d.
+    \end{align*}
+    %
+    By applying the isomorphism to both sides of the equation above,
+    by~\cref{eq:comm iso} we get
+    %
+    \begin{align*}
+        % \label{eq:companion shuffle automaton}
+        \partial {x_j} {\widetilde {f_i}}
+            = \widetilde {\deriveleft {a_j} {f_i}}
+            = \widetilde {\left(p^{(j)}_i(f_1, \dots, f_k)\right)}
+            = p^{(j)}_i(\widetilde {f_1}, \dots, \widetilde {f_k}),
+        % \quad \forall 1 \leq i \leq k, 1 \leq j \leq d.
+    \end{align*}
+    %
+    and thus $\widetilde f$ satisfies the \CDA{} equations~\cref{eq:CDA}.
+    %
+    On the other hand,
+    if $g \in \powerseries \Q x^k$ is a tuple of power series solutions
+    of~\cref{eq:CDA} with initial condition $g(0) = c$,
+    then by following the inverse of the isomorphism %defined above
+    we obtain a tuple of commutative series $h \in (\commseries \Q \Sigma)^k$
+    \st~$\widetilde h = g$ and $\coefficient \e h = c$,
+    solving equations~\cref{eq:companion shuffle automaton}.
+    %
+    Since equations~\cref{eq:companion shuffle automaton}
+    admit exactly one series solution with $c$ as initial condition,
+    $h = f$ is the semantics of the shuffle automaton.
+    %
+    Consequently, $f$ is a tuple of commutative series.
+\end{proof}
+
+We illustrate the characterisation provided by \cref{lem:CDA solvability}
+on two simple examples.
+%
+\begin{example}[Uniformably solvable systems]
+    Consider the \CDA~equations from~\cref{ex:binomial CDA}.
+    % and fix the initial condition $c := \tuple{1, 0, 0}$.
+    The companion shuffle automaton is the one from~\cref{ex:binomial shuffle automaton}.
+    %
+    We claim that $\Delta_{a_1} \circ \Delta_{a_2} = \Delta_{a_2} \circ \Delta_{a_1}$.
+    %
+    It suffices to verify the claim for the generators $X_1, X_2, X_3$:
+    %
+    \begin{align*}
+        \Delta_{a_1} \Delta_{a_2} X_1
+            &= \Delta_{a_1} (X_1 \cdot X_2)
+            = X_1 \cdot (1 + X_3) \cdot X_2 + X_1
+            = X_1 + X_1 X_2 + X_1 X_2 X_3, \\
+        \Delta_{a_2} \Delta_{a_1} X_1
+            &= \Delta_{a_2} (X_1 \cdot (1 + X_3))
+            = X_1 \cdot X_2 \cdot (1 + X_3) + X_1
+            = X_1 + X_1 X_2 + X_1 X_2 X_3, \\
+        \Delta_{a_1} \Delta_{a_2} X_2
+            &= \Delta_{a_2} \Delta_{a_1} X_2 = 0, \\
+        \Delta_{a_1} \Delta_{a_2} X_3
+            &= \Delta_{a_2} \Delta_{a_1} X_3 = 0.
+    \end{align*}
+    %
+    Thus, \emph{every} initial condition $c \in \Q^3$
+    yields commutative series $\sem X = \tuple{\sem {X_1}, \sem {X_2}, \sem {X_3}} \in \series \Q {a_1, a_2}^3$
+    starting at $\coefficient e \sem X = c$.
+    %
+    Thanks to \cref{lem:CDA solvability},
+    this means that every initial condition $c \in \Q^3$
+    extends to a power series solution $f \in \powerseries \Q {x_1, x_2, x_3}$ starting at $f(0) = c$.
+    %
+    This shows that \cref{ex:binomial CDA} is \emph{uniformably solvable}.
+    %
+    The solution $\tuple{e^{x_1 \cdot (1 + x_2)}, x_1, x_2}$ given there
+    corresponds to the initial condition $c = \tuple{1, 0, 0}$.
+\end{example}
+
+\begin{example}
+    The \CDA~equations from~\cref{ex:Stirling second kind CDA} are also uniformly solvable.
+    To see this consider the companion shuffle automaton.
+    It has three nonterminals $X = \set{X_1, X_2, X_3}$ and transitions
+    %
+    \begin{align*}
+        \arraycolsep=1pt
+        \begin{array}{rl}
+            \Delta_{a_1} X_1 &:= X_1 (X_2 - 1), \\
+            \Delta_{a_2} X_1 &:= X_1 X_2 X_3,
+        \end{array}
+        \quad
+        \begin{array}{rl}
+            \Delta_{a_1} X_2 &:= 0, \\
+            \Delta_{a_2} X_2 &:= X_2,
+        \end{array}
+        \quad
+        \begin{array}{rl}
+            \Delta_{a_1} X_3 &:= 1, \\
+            \Delta_{a_2} X_3 &:= 0.
+        \end{array}
+    \end{align*}
+    %
+    As in the previous example,
+    $\Delta_{a_1} \circ \Delta_{a_2} = \Delta_{a_2} \circ \Delta_{a_1}$,
+    since it holds for the generators $\set{X_1, X_2, X_3}$:
+    %
+    \begin{align*}
+        \Delta_{a_1} \Delta_{a_2} X_1
+            &= \Delta_{a_1} (X_1 X_2 X_3)
+            = X_1 (X_2 - 1) X_2 X_3 + X_1 X_2 \\
+        \Delta_{a_2} \Delta_{a_1} X_1
+            &= \Delta_{a_2} (X_1 (X_2 - 1))
+            = X_1 X_2 X_3 (X_2 - 1) + X_1 X_2 \\
+        \Delta_{a_1} \Delta_{a_2} X_2
+            &= \Delta_{a_2} \Delta_{a_1} X_2 = 0 \\
+        \Delta_{a_1} \Delta_{a_2} X_3
+            &= \Delta_{a_2} \Delta_{a_1} X_3 = 0.
+    \end{align*}
+    %
+    Consequently, every initial condition $c \in \Q^3$
+    yields a commutative series $\sem X \in \series \Q {a_1, a_2}^3$ starting at $\sem X = c$,
+    and by \cref{lem:CDA solvability} this means that every initial condition $c \in \Q^3$
+    extends to a power series solution of the \CDA{} equations in \cref{ex:Stirling second kind CDA}.
+    % \begin{align*}
+    %     \partial {x_1} {\partial {x_2} f}
+    %     &= \partial {x_1} {(fgh)}
+    %     = (fg - f) gh + fg = fg^2h - fgh + fg \\
+    %     %
+    %     \partial {x_2} {\partial {x_1} f}
+    %     &= \partial {x_2} (fg - f)
+    %     = fg^2h + fg - fgh \\
+    %     %
+    %     \partial {x_1} {\partial {x_2} g}
+    %     &= \partial {x_1} g = 0 \\
+    %     %
+    %     \partial {x_2} {\partial {x_1} g}
+    %     &= \partial {x_2} 0 = 0 \\
+    %     %
+    %     \partial {x_1} {\partial {x_2} h}
+    %     &= \partial {x_1} 0 = 0 \\
+    %     %
+    %     \partial {x_2} {\partial {x_1} h}
+    %     &= \partial {x_2} 1 = 0.
+    % \end{align*}
+    %
+\end{example}
+
+We now have all ingredients to solve~\cref{problem:CDA solvability}.
+%
+For \CDA~equations~\cref{eq:CDA} and initial condition $c \in \Q^k$
+we build their companion shuffle automaton~(\cf~\cref{eq:companion shuffle automaton}),
+and check that all series $\sem {X_1}, \dots, \sem {X_k}$ recognised by its nonterminals are commutative.
+The latter is decidable in~\TWOEXPSPACE~by~\cref{thm:shuffle finite commutativity problem}.
+%
+Correctness follows from~\cref{lem:CDA solvability}.
+%
+\begin{theorem}
+    \label{thm:decidability of CDA solvability}
+    The \CDA~solvability problem~(\cref{problem:CDA solvability}) is decidable in \TWOEXPSPACE.
+\end{theorem}

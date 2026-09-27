@@ -1,0 +1,225 @@
+%!TEX root main.tex
+
+\section{Polynomial vs.~Hadamard automata}
+\label{app:polynomial automata}
+
+In this section, we give more details about the relationship
+between polynomial and Hadamard automata,
+expanding on~\cref{rem:Hadamard and polynomial automata}.
+%
+% Our presentation of polynoimial automata follows~\cite{Bojanczyk:AutomataToolbox:2025}.
+%
+A \emph{polynomial automaton}~\cite{BenediktDuffSharadWorrell:PolyAut:LICS:2017} is a tuple
+$\AA = \tuple{k, \Sigma, Q, q_I, \Delta, F}$
+where $k \in \N$ is the \emph{dimension},
+$\Sigma$ is a finite \emph{input alphabet},
+$Q = \Q^k$ is the set of \emph{states},
+$q_I \in Q$ is the \emph{initial state},
+$\Delta : \Sigma \to Q \to Q$ is the polynomial \emph{transition function},
+and $F : Q \to \Q$ is the polynomial \emph{output function}.
+%
+For every input symbol $a \in \Sigma$,
+the polynomial map $\Delta^a : Q^k \to Q^k$
+is presented as a tuple of polynomials $\Delta^a = \tuple{\Delta^a_1, \dots, \Delta^a_k} \in \poly \Q {y_1, \dots, y_k}^k$,
+inducing a polynomial action on states
+%
+\begin{align*}
+    q \cdot a := \Delta^a(q) = \tuple{\Delta^a_1(q), \dots, \Delta^a_k(q)} \in Q,
+    \quad\text{for all } q \in Q.
+\end{align*}
+%
+Similarly, the polynomial output function $F$ is presented as a polynomial $F \in \poly \Q {y_1, \dots, y_k}$
+inducing the corresponding polynomial map
+$F(q) = F(q_1, \dots, q_k) \in \Q$ for every $q = \tuple{q_1, \dots, q_k} \in Q$.
+%
+The action of $\Sigma$ is extended to words $w \in \Sigma^*$ homomorphically:
+$q \cdot \e := q$ and $q \cdot (a \cdot w) := (q \cdot a) \cdot w$.
+%
+The \emph{semantics} of a state $q \in Q$ of a polynomial automaton $\AA$
+is the series defined as follows:
+%
+\begin{align*}
+    \Asem \AA q &\in \series \Q \Sigma \\
+    \coefficient w (\Asem \AA q) &:= F(q \cdot w), \quad \text{for every } w \in \Sigma^*.
+\end{align*}
+%
+The semantics of the automaton $\AA$ is the series recognised by the initial state
+$\Asem \AA {q_I} {}$.
+%
+The following lemma shows that polynomial automata recognise precisely the Hadamard-finite series,
+up to reversal of the input.
+%
+Since Hadamard-finite series coincide with the series recognised by Hadamard automata
+(\cref{lem:Hadamard automata and series}),
+the same holds for Hadamard automata.
+%
+\begin{lemma}
+    A series $f \in \series \Q \Sigma$ is recognisable by a polynomial automaton
+    if, and only if, its reversal $f^R$ is Hadamard finite
+    (equivalently, recognised by a Hadamard automaton).
+\end{lemma}
+%
+\noindent
+Recall that $f^R$ is the series that maps a word $w \in \Sigma^*$ to $f(w^R)$,
+where $w^R = a_n \cdots a_1$ is the reversal of $w = a_1 \cdots a_n$.
+%
+\begin{proof}
+    For the ``only if'' direction,
+    let $\AA$ be a polynomial automaton recognising
+    the series $f = \Asem \AA {q_I}$.
+    %
+    For every $1 \leq i \leq k$,
+    consider the series $g_i \in \series \Q \Sigma$ defined as
+    %
+    \begin{align*}
+        g_i(w) := \pi_i(q_I \cdot w^R),
+        \quad \text{for all } w \in \Sigma^*.
+    \end{align*}
+    %
+    In other words, $g_i(w)$ is the value of component $i$
+    after reading $w^R$ from the initial state.
+    %
+    Consider now the Hadamard algebra
+    %
+    \begin{align*}
+        A := \poly \Q {g_1, \dots, g_k}_{\hadamard} \subseteq \series \Q \Sigma.
+    \end{align*}
+    %
+    Thanks to the working characterisation of Hadamard-finite series from~\cref{lem:Hadamard finite - working definition},
+    this part of the proof is concluded by the following two claims.
+    %
+    \begin{claim*}
+        $f^R$ is in $A$.
+    \end{claim*}
+    \begin{proof}
+        By definition of $f$, we have $f = \Asem \AA {q_I} {}$.
+        Consequently for every $w \in \Sigma^*$ we have
+        %
+        \begin{align*}
+            f^R(w)
+                &= F(q_I \cdot w^R)
+                = F(\pi_1(q_I \cdot w^R), \dots, \pi_k(q_I \cdot w^R))
+                = F(g_1(w), \dots, g_k(w)),
+        \end{align*}
+        and thus $f^R = F(g_1, \dots, g_k)$ is in $A$,
+        as required.
+    \end{proof}
+
+    \begin{claim*}
+        For every $a \in \Sigma$ and $1 \leq i \leq k$,
+        we have $\deriveleft a g_i \in A$.
+    \end{claim*}
+    \begin{proof}
+        By the definition of $g_i$, for every $w \in \Sigma^*$ we have
+        %
+        \begin{align*}
+            (\deriveleft a g_i)(w)
+                &= g_i(a \cdot w)
+                = \pi_i(q_I \cdot (a \cdot w)^R)
+                = \pi_i(q_I \cdot (w^R \cdot a))
+                = \pi_i((q_I \cdot w^R) \cdot a)
+                = \Delta^a_i(q_I \cdot w^R)
+                = \Delta^a_i(g_1(w), \dots, g_k(w)),
+        \end{align*}
+        and thus $\deriveleft a g_i = \Delta^a_i(g_1, \dots, g_k)$
+        is in $A$, as required.
+    \end{proof}
+
+    For the ``if'' direction, let $g \in \series \Q \Sigma$
+    belong to a finitely generated Hadamard algebra $A := \poly \Q {g_1, \dots, g_k}_{\hadamard}$
+    closed under left derivatives $\deriveleft a$ (with $a \in \Sigma$).
+    %
+    Since $g \in A$, we can write $g = F(g_1, \dots, g_k)$
+    for some polynomial $F \in \poly \Q {y_1, \dots, y_k}$.
+    %
+    For every $1 \leq i \leq k$ and $a \in \Sigma$,
+    the series $\deriveleft a g_i$ is in $A$ and thus it can be written as
+    $\Delta^a_i(g_1, \dots, g_k)$ for some polynomial $\Delta^a_i \in \poly \Q {y_1, \dots, y_k}$.
+    %
+    Finally, let $q_I := \tuple{g_1(\e), \dots, g_k(\e)} \in \Q^k$ be the tuple of constant terms of the generators.
+    %
+    This provides us with the data required to construct a dimension $k$ polynomial automaton
+    $\AA = \tuple{k, \Sigma, Q, q_I, \Delta, F}$.
+    %
+    The proof is concluded with the following two claims.
+    %
+    \begin{claim*}
+        For every $1 \leq i \leq k$ and $w \in \Sigma^*$, we have
+        \begin{align*}
+            g_i(w) = \pi_i(q_I \cdot w^R).
+        \end{align*}
+    \end{claim*}
+    \begin{proof}
+        We proceed by induction on $w$.
+        In the base case $w = \e$, by definition we have
+        $\pi_i(q_I \cdot \e^R) = \pi_i(q_I) = g_i(\e)$.
+        In the inductive case, we have
+        %
+        \begin{align*}
+            g_i(a \cdot w)
+                &=\coefficient w (\deriveleft a g_i)
+                = \coefficient w (\Delta^a_i(g_1, \dots, g_k))
+                = \Delta^a_i(g_1(w), \dots, g_k(w))
+                = \Delta^a_i(\pi_1(q_I \cdot w^R), \dots, \pi_k(q_I \cdot w^R))
+                = \Delta^a_i(q_I \cdot w^R) = \\
+                &= \pi_i((q_I \cdot w^R) \cdot a)
+                = \pi_i(q_I \cdot (w^R \cdot a))
+                = \pi_i (q_I \cdot (a \cdot w)^R).
+            \qedhere
+        \end{align*}
+    \end{proof}
+    \begin{claim*}
+        We have $g = \sem {q_I}^R$.
+    \end{claim*}
+    \begin{proof}
+        Consider an arbitrary $w \in \Sigma^*$,
+        and we need to show $g(w) = F(q_I \cdot w^R)$.
+        %
+        Thanks to the previous claim, we have
+        %
+        $g(w)
+                = F(g_1(w), \dots, g_k(w))
+                = F(\pi_1(q_I \cdot w^R), \dots, \pi_k(q_I \cdot w^R))
+                = F(q_I \cdot w^R)$.
+    \end{proof}
+    \qedhere
+\end{proof}
+
+% \section{stuff}
+
+% A \emph{series bisimulation} is a binary relation ${\rel} \subseteq \series \Q \Sigma \times \series \Q \Sigma$
+% \st~whenever $f \rel g$ we have
+% %
+% \begin{enumerate}
+%     \item $\coefficient \e f = \coefficient \e g$, and
+%     \item $\deriveleft a f \rel \deriveleft a g$, for every $a \in \Sigma$.
+% \end{enumerate}
+% %
+% An induction on the length of finite words shows that $f \rel g$ implies $f = g$.
+% % when ${\rel}$ is a bisimulation.
+% %
+% For a relation ${\rel}$, let ${\tilderel}$ be the smallest congruence containing ${\rel}$.
+% In other words, $f_0 \tilderel f_1, g_0 \tilderel g_1$ implies
+% %
+% \begin{enumerate}
+%     \item $(c \cdot f_0) \tilderel (c \cdot f_1)$, for all $c \in \Q$,
+%     \item $(f_0 + g_0) \tilderel (f_1 + g_1)$, and
+%     \item $(f_0 \product g_0) \tilderel (f_1 \product g_1)$
+% \end{enumerate}
+% %
+% A \emph{series bisimulation up-to-context} is a binary relation ${\rel} \subseteq \series \Q \Sigma \times \series \Q \Sigma$
+% \st~whenever $f \rel g$ we have
+% %
+% \begin{enumerate}
+%     \item $\coefficient \e f = \coefficient \e g$, and
+%     \item $\deriveleft a f \tilderel \deriveleft a g$, for every $a \in \Sigma$.
+% \end{enumerate}
+% %
+% A structural induction on polynomial expressions shows that if $\rel$ is a bisimulation up-to-context,
+% then $\tilderel$ is a bisimulation.
+% %
+% Consequently we obtain the following coinductive reasoning principle.
+% %
+% \begin{lemma}
+%     If $\rel$ is a bisimulation up-to-context and $f \rel g$ then $f = g$.
+% \end{lemma}

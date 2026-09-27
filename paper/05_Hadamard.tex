@@ -1,0 +1,1321 @@
+%!TEX root main.tex
+\section{Hadamard automata and Hadamard-finite series}
+\label{sec:Hadamard}
+
+In this section, we study a weighted model of computation strongly related to polynomial automata
+and the class of series its recognises.
+%
+We begin in~\cref{sec:Hadamard:preliminaries} with some mathematical preliminaries.
+%
+In~\cref{sec:Hadamard-finite series} we define Hadamard-finite series, generalising the recognisable series,
+and present their closure properties.
+%
+Hadamard automata are defined and studied in~\cref{sec:Hadamard automata},
+where they are shown to recognise precisely the Hadamard-finite series.
+%
+This leads to the main result of the section:
+Hadamard-finite series constitute an effective prevariety~(\cref{thm:Hadamard prevariety})
+and thus the commutativity problem is decidable for this model\-
+(\cref{thm:Hadamard-finite series - decidable commutativity}).
+%
+We conclude in~\cref{sec:multivariate polyrec} with an application of the commutativity problem
+to a class of multivariate number sequences defined by polynomial recursions~(\cref{thm:polyrec consistency}).
+
+\subsection{Preliminaries}
+\label{sec:Hadamard:preliminaries}
+
+\subsubsection{Difference algebra}
+\label{sec:difference algebra}
+
+Let $\A = \tuple{A; 0, 1, {+}, {*}}$ be an \emph{algebra} (over the field of rational numbers),
+that is a vector space equipped with an associative commutative bilinear product
+with identity $1$~\cite[Ch.~3, §1]{Bourbaki:Algebra:I:1974}.
+%
+An algebra \emph{endomorphism} is a linear function $F : A \to A$ \st
+%
+\begin{align}
+    \label{eq:endomorphism}
+    \tag{endomorphism rule}
+    F(1) = 1
+        \qquad\text{and}\qquad
+        F(\alpha * \beta) = F \alpha * F \beta,
+        \quad\text{for all } \alpha, \beta \in A.
+\end{align}
+%
+A \emph{difference algebra}~\cite{RMCohn:DifferenceAlgebra:1965,Levin:DifferenceAlgebra:2008}
+is an algebra $\tuple{A; 0, 1, {+}, {*}, (F_j)_{1\leq j\leq d}}$
+together with finitely many endomorphisms $F_1, \dots, F_d : A \to A$.
+%
+Unlike what is usually assumed in the difference algebra literature,
+we do not require the $F_i$'s to pairwise commute.
+%
+Difference algebras will provide the semantic background for the rest of the section.
+
+As an example, consider the algebra of multivariate polynomials
+$\tuple{\poly \Q X; 0, 1, {+}, {\cdot}}$,
+where $X = \tuple{X_1, \dots, X_k}$ is a tuple of commuting variables.
+%
+%When the variable names do not matter,
+%we sometimes write $\poly \Q k$ instead of $\poly \Q X$.
+%
+An endomorphism $F$ acts on a polynomial $\alpha \in \poly \Q X$
+just by evaluation $F \alpha = \alpha(F(X_1), \dots, F(X_k))$,
+and thus it is uniquely defined once we have fixed $F(X_1), \dots, F(X_k) \in \poly \Q X$.
+%
+% This presentation choice will make it easier to compare homomorphisms
+% with shuffles and infiltrations in the upcoming sections.
+%
+If we fix distinguished endomorphisms $F_1, \dots, F_d$,
+then the algebra of polynomials acquires the structure of a difference algebra
+$\tuple{\poly \Q X; 0, 1, {+}, {\cdot}, (F_j)_{1 \leq j \leq d}}$.
+%
+Other examples of difference algebras will be presented in \cref{sec:Hadamard algebra,sec:shift algebra}.
+
+\subsubsection{Hadamard difference algebra}
+\label{sec:Hadamard algebra}
+
+We define a product operation on series
+which will be central for the development of this section.
+%
+The \emph{Hadamard product}~\cite{Fliess:1974} of two series $f, g \in \series \Q \Sigma$,
+denoted by $f \hadamard g$,
+is defined element-wise:
+For every $w \in \Sigma^*$,
+$\coefficient w (f \hadamard g) := \coefficient w f \cdot \coefficient w g$.
+%
+For instance, if we have two polynomials $2 \cdot aab - c$ and $3 \cdot aab + b$ (in noncommuting variables),
+their Hadamard product is $6 \cdot aab$.
+%
+This is an associative and commutative operation, it distributes over sum,
+and the identity element is the series $\one = \sum_{w\in \Sigma^*} 1 \cdot w$ mapping every word to $1$,
+giving rise to the \emph{Hadamard algebra} $\tuple{\series \Q \Sigma; \zero, \one, {+}, {\hadamard}}$.
+%
+The Hadamard product for series is reminiscent of the notion of \emph{intersection} in language theory
+and of \emph{fully synchronous composition} in concurrency theory.
+
+In order to make it easier to compare the Hadamard product
+to the shuffle and infiltration products studied later,
+we find it convenient to provide the following alternative,
+coinductive definition
+(\cf~\cite[Definition 8.1]{BasoldHansenPinRutten:MSCS:2017}):
+%
+For any two series $f, g \in \series \Q \Sigma$,
+their Hadamard product $f \hadamard g$
+is the unique series \st
+%
+\begin{align}
+    \tag{${\hadamard}$-$\e$}
+    \label{eq:hadamard:base}
+    \coefficient \e {(f \hadamard g)}
+        &= f_\e \cdot g_\e, \\
+    \tag{${\hadamard}$-$\deriveleft a$}
+    \label{eq:hadamard:step}
+        \deriveleft a (f \hadamard g)
+        &= \deriveleft a f \hadamard \deriveleft a g,
+        \ \forall a \in \Sigma.
+\end{align}
+%
+%Thus it gives rise to the \emph{Hadamard algebra} of series
+%$\series \Q \Sigma_{\hadamard} = \tuple{\series \Q \Sigma, {+}, {\hadamard}}$.
+%
+Equation \cref{eq:hadamard:step} states that left derivatives are endomorphisms \wrt~the Hadamard product.
+%
+We thus obtain the \emph{Hadamard difference algebra} of series
+%\begin{align*}
+    $\series \Q \Sigma_{\hadamard} := \tuple{\series \Q \Sigma; \zero, \one, {+}, {\hadamard}, (\deriveleft a)_{a \in \Sigma}}$,
+%\end{align*}
+which will provide the semantic background
+for the forthcoming Hadamard automata.
+%
+Right derivatives are also Hadamard algebra endomorphisms,
+which will be useful later.
+% which will be used later in the proof of~\cref{lem:Hadamard closure properties}.
+%
+\begin{restatable}{proposition}{lemRightDerivationHadamardEndo}
+    \label{lem:right derivation Hadamard endomorphism}
+    Right derivatives $\deriveright a$ (with $a \in \Sigma$) are Hadamard algebra endomorphisms.
+    I.e., they are linear, preserve the multiplicative identity $\deriveright a \one = \one$,
+    and commute with Hadamard product:
+    %
+    \begin{align}
+        \tag{${\hadamard}$-$\deriveright a$}
+        \label{eq:derive hadamard right}
+        \deriveright a (f \hadamard g) = \deriveright a f \hadamard \deriveright a g,
+        \quad\forall a \in \Sigma.
+    \end{align}
+\end{restatable}
+%
+% \begin{proof}
+%     Linearity follows directly from the definition of $\deriveright a$.
+%     Equation~\cref{eq:derive hadamard right} could be proved coinductively,
+%     however a direct argument suffices since the Hadamard product acts element-wise:
+%     For every $w \in \Sigma^*$ and $a \in \Sigma$,
+%     %
+%     \begin{align*}
+%         \coefficient w {\deriveright a (f \hadamard g)}
+%         &= \coefficient {wa} {(f \hadamard g)}
+%         = \coefficient {wa} f \cdot \coefficient {wa} g
+%         = \coefficient w \deriveright a f \cdot \coefficient w \deriveright a g
+%         = \coefficient w (\deriveright a f \hadamard \deriveright a g). \qedhere
+%     \end{align*}
+% \end{proof}
+
+\subsection{Hadamard-finite series}
+\label{sec:Hadamard-finite series}
+
+In this section we rely on the structure of the Hadamard algebra
+to define a finitely presented class of series.
+%
+For series $f_1, \dots, f_k \in \series \Q \Sigma$,
+let $\poly \Q {f_1, \dots, f_k}_{\hadamard}$ be the smallest Hadamard algebra containing $f_1, \dots, f_k$.
+%
+Hadamard algebras of this form are called~\emph{finitely generated},
+with \emph{generators} $f_1, \dots, f_k$.
+%
+It is a \emph{difference Hadamard algebra}
+if it is additionally closed under the endomorphisms $\deriveleft a$, $a \in \Sigma$.
+%
+\begin{definition}[Hadamard-finite series]
+    \label{def:Hadamard finite}
+    A series is \emph{Hadamard finite} if it belongs to a
+    finitely generated difference Hadamard algebra.
+\end{definition}
+%
+\noindent
+The following lemma will be our working definition of Hadamard-finite series.
+%
+\begin{restatable}{lemma}{lemHadamardFiniteWorkingDefinition}
+    \label{lem:Hadamard finite - working definition}
+    A series $f$ is Hadamard finite iff there are generators $f_1, \dots, f_k$ \st:
+    %
+    \begin{enumerate}
+        \item $f \in \poly \Q {f_1, \dots, f_k}_{\hadamard}$.
+        %\Ie, there exists a polynomial $p \in \poly \Q {y_1, \dots, y_k}$
+        %\st~$f = p(f_1, \dots, f_k)$.
+
+        \item $\deriveleft a f_i \in \poly \Q {f_1, \dots, f_k}_{\hadamard}$
+        for every $a \in \Sigma$ and $1 \leq i \leq k$.
+        %
+        \Ie, there are polynomials $p^{(a)}_i \in \poly \Q {y_1, \dots, y_k}$ \st
+        %
+        \begin{align}
+            \label{eq:Hadamard finite equations}
+            \deriveleft a f_i = p^{(a)}_i(f_1, \dots, f_k),
+            \quad\text{for all } a \in \Sigma, 1 \leq i \leq k.
+        \end{align}
+    \end{enumerate}
+    %
+    Moreover, we can assume without loss of generality that $f$ equals one of the generators $f = f_1$.
+\end{restatable}
+%
+\noindent
+We call~\cref{eq:Hadamard finite equations}~a \emph{system of Hadamard-finite equations}.
+%
+Note that every choice for the constant terms $\coefficient \e {f_i} \in \Q$
+extends to a unique series solution of~\cref{eq:Hadamard finite equations}.
+%
+Consequently, a Hadamard-finite series can be finitely presented by
+the constant terms and the polynomials $p_i^{(a)} \in \poly \Q {y_1, \dots, y_k}$.
+%
+%
+\begin{proof}
+    If $f$ is Hadamard finite, then the two conditions hold by definition.
+    \Wlg~we can take $f = f_1$ to be one of the generators
+    since we can just add $f$ to the generators,
+    without changing the validity of the two conditions.
+
+    For the other direction, assume that there are generators $f_1, \dots, f_k$ with $f = f_1$ satisfying the two conditions.
+    %
+    We need to show that the finitely generated algebra $A := \poly \Q {f_1, \dots, f_k}_{\hadamard}$ is closed under left derivatives.
+    %
+    To this end, consider a series $g \in A$.
+    There is a polynomial $p \in \poly \Q {y_1, \dots, y_k}$ \st~$g = p(f_1, \dots, f_k)$.
+    %
+    Take now the left derivative of both sides.
+    Since they are homomorphisms of $A$, we have
+    $\deriveleft a g = \deriveleft a (p(f_1, \dots, f_k)) = p(\deriveleft a f_1, \dots, \deriveleft a f_k)$.
+    %
+    By the second condition, $\deriveleft a f_1, \dots, \deriveleft a f_k \in A$,
+    and thus $\deriveleft a g \in A$ since $A$ is an algebra, as required.
+\end{proof}
+
+\begin{remark}
+    Hadamard-finite equations have been considered under the name of
+    \emph{polynomial recurrent relations} by Sénizergues\-
+    \cite[Definition 5]{Senizergues:CSR:2007},
+    where they are claimed, without proof, to coincide
+    with those recognised by deterministic pushdown automata of level 3\-
+    \cite[Corollary 3]{Senizergues:CSR:2007},
+    and to have a decidable equality problem\-
+    \cite[Theorem 5]{Senizergues:CSR:2007}.
+    %
+    In the context of arbitrary semirings,
+    they also appear under the name of \emph{Hadamard-polynomial equations}~\cite[Sec.~6]{KostolanyiMisun:TCS:2018}.
+\end{remark}
+
+\begin{remark}[Cauchy product and Cauchy-finite series]
+    The definition of Hadamard-finite series (as well as the shuffle and infiltration-finite series from the next sections) follows a natural pattern.
+    %
+    In fact, \emph{every} algebra of series $\tuple{\series \Q \Sigma; 0, 1, {+}, {\product}}$
+    gives rise to a corresponding class of $*$-finite series:
+    A series $f \in \series \Q \Sigma$ is \emph{$*$-finite}
+    if it belongs to a finitely generated sub-algebra closed under $\deriveleft a$ ($a \in \Sigma$).
+    %
+    For instance, taking ``$\product$'' to be the \emph{Cauchy product} (also known as \emph{concatenation product})
+    we obtain the \emph{Cauchy-finite series},
+    which have been studied in~\cite{Wechler:MFCS:1979} and shown to coincide with the class of algebraic series.
+    %
+    Note that Cauchy product is not commutative, unlike the products that we consider in this paper,
+    and thus does not fall under the scope of the techniques that we develop.
+\end{remark}
+
+\begin{remark}
+    When all the polynomials involved in the definition of a Hadamard-finite series have degree $\leq 1$
+    (\ie, they are linear), we recover the notion of recognisable series from~\cref{sec:recognisable}.
+\end{remark}
+
+We recall some basic closure properties of Hadamard-finite series.
+All of them follow straightforwardly from the definitions.
+
+\begin{restatable}[Closure properties of Hadamard-finite series]{lemma}{lemHadamardClosureProperties}
+    \label{lem:Hadamard closure properties}
+    The class of Hadamard-finite series is an effective difference algebra,
+    \ie, it contains $\zero$, $\one$, and it is effectively closed under scalar product,
+    sum, Hadamard product, and left derivatives.
+    %
+    Moreover, Hadamard-finite series are effectively closed under right derivatives and left anti-derivatives.
+    %
+    % Additionally,
+    % \begin{itemize}
+    %     \item if $f$ is a Hadamard finite,
+    %     then $\deriveright a f$ is effectively Hadamard finite, and
+    %     %
+    %     \item If $g \in \series \Q \Sigma$ is an anti-derivative
+    %     of a tuple of Hadamard-finite series $f = \tuple{f_a}_{a \in \Sigma} \in \series \Q \Sigma^\Sigma$,
+    %     then $g$ is effectively Hadamard finite.
+    % \end{itemize}
+\end{restatable}
+%
+\noindent
+When we say that Hadamard-finite series are effectively closed under right derivatives
+we mean that there is an algorithm that, given in input a finite presentation for $f$ and an input symbol $a \in \Sigma$,
+produces in output a finite presentation for $\deriveright a f$.
+%
+A similar remark applies to the effectiveness of the other closure properties.
+%
+Closure under anti-derivatives will be used in conjunction to~\cref{lem:equality reduces to commutativity}
+to show that the commutativity problem is at least as hard as the equality problem.
+%
+\begin{proof}
+    The series $\zero$ and $\one$ are obviously Hadamard finite.
+    %
+    Effective closure under scalar product $c \cdot f$ (with $c \in \Q$), addition $f + g$,
+    left derivatives $\deriveleft a f$, and left anti-derivatives is done as in~\cref{lem:recognisable closure properties}.
+    %
+    Regarding closure under Hadamard product $f \hadamard g$,
+    it is easy to show that if $f_1, \dots, f_k$ and $g_1, \dots, g_\ell$ are generators for $f$, resp., $g$,
+    then $f_1, \dots, f_k, g_1, \dots, g_\ell$ can be taken to generate $f \hadamard g$.
+    %
+    % Since $\deriveleft a \zero = \zero$ and $\deriveleft a \one = \one$,
+    % the series $\zero$ and $\one$ are both Hadamard finite.
+    %
+    We consider now closure under right derivatives.
+    %
+    Consider a Hadamard-finite series $f \in A$ for the finitely generated Hadamard algebra
+    %
+    \begin{align*}
+        A := \poly \Q {f_1, \dots, f_k}_{\hadamard}
+    \end{align*}
+    %
+    closed under left derivatives.
+    %
+    Fix an input symbol $a \in \Sigma$.
+    %
+    We consider new generators $\deriveright a f_i$, for every $1 \leq i \leq k$,
+    yielding the finitely generated Hadamard algebra 
+    %
+    \begin{align*}
+        B := \poly \Q {\deriveright a f_1, \dots, \deriveright a f_k}_{\hadamard}.
+    \end{align*}
+    %
+    By~\cref{lem:Hadamard finite - working definition},
+    the proof is concluded by the following two claims.
+    %
+    \begin{claim*}
+        $\deriveright a f \in A$.
+    \end{claim*}
+    %
+    \begin{claimproof}
+        Since $f$ is in the Hadamard algebra generated by the $f_i$'s
+        and right derivative is an endomorphism by~\cref{lem:right derivation Hadamard endomorphism},
+        $\deriveright a f$ is in the Hadamard algebra generated by the $\deriveright a f_i$'s,
+        \ie, $\deriveright a f \in A$.
+    \end{claimproof}
+    %
+    \begin{claim*}
+        For every $b \in \Sigma$ and $1 \leq i \leq k$,
+        $\deriveleft b \deriveright a f_i \in A$.
+    \end{claim*}
+    %
+    \begin{claimproof}
+        Since left and right derivatives commute by~\cref{lem:derive left right commutativity},
+        we have $\deriveleft b \deriveright a f_i = \deriveright a \deriveleft b f_i$.
+        %
+        But $\deriveleft b f_i$ is in the Hadamard algebra generated by the $f_i$'s
+        and since right derivative is an endomorphism by~\cref{lem:right derivation Hadamard endomorphism},
+        $\deriveright a \deriveleft b f_i \in A$.
+    \end{claimproof}
+\end{proof}
+
+In this section we have defined the class of Hadamard-finite series in a semantic fashion,
+based on which we have shown effective closure properties in~\cref{lem:Hadamard closure properties}.
+%
+In order to show that Hadamard-finite series constitute an effective prevariety,
+it remains to show that the zeroness problem is decidable for them.
+%
+In order to achieve this, we introduce in the next section a syntactic presentation of the same class
+via a corresponding notion of automata.
+
+\subsection{Hadamard automata}
+\label{sec:Hadamard automata}
+
+We define the central computation model of the section.
+
+\paragraph{Syntax.}
+
+A \emph{Hadamard automaton} is a tuple $\AA = \tuple{\Sigma, X, F, \Delta}$
+where $\Sigma$ is a finite \emph{input alphabet},
+$X = \set{X_1,  \dots X_k}$ is a finite set of \emph{nonterminal symbols},
+$F : X \to \Q$ is the \emph{output function} (or \emph{initial condition}),
+and $\Delta : \Sigma \to X \to \poly \Q X$ is the \emph{transition function}.
+%
+A Hadamard automaton is \emph{linear} if $\Delta_a X_i$ is a polynomial of degree $\leq 1$
+for all $a \in \Sigma$ and $1 \leq i \leq k$.
+
+\paragraph{Semantics.}
+
+A \emph{configuration} of a Hadamard automaton is a polynomial $\alpha \in \poly \Q X$.
+%
+For every input symbol $a \in \Sigma$,
+the transition function $\Delta_a : X \to \poly \Q X$
+is extended to a unique endomorphism $\Delta_a : \poly \Q X \to \poly \Q X$ of the polynomial algebra of configurations.
+In other words, $\Delta_a$ acts by evaluation:
+$\Delta_a(\alpha) = \alpha(\Delta_a(X_1), \dots, \Delta_a(X_k))$.
+%
+Finally, transitions from single letters
+are extended to all finite input words homomorphically:
+For every configuration $\alpha \in \poly \Q X$,
+input word $w \in \Sigma^*$, and letter $a \in \Sigma$,
+we have $\Delta_\e \alpha := \alpha$
+and $\Delta_{a \cdot w} \alpha := \Delta_w \Delta_a \alpha$.
+%
+We have all ingredients to define the \emph{semantics} of a Hadamard automaton $\AA$,
+which is a function $\Asem \AA \_ : \poly \Q X \to \series \Q \Sigma$
+mapping a configuration $\alpha \in \poly \Q X$ to the series $\Asem \AA \alpha \in \series \Q \Sigma$ \st
+%
+\begin{align}
+    \label{eq:semantics}
+    \coefficient w {(\Asem \AA \alpha)} &:= F \Delta_w \alpha,
+        \quad \text{for all } w \in \Sigma^*.
+\end{align}
+%
+In other words, from the initial configuration $\alpha$ the automaton reads $w$ and goes to configuration $\Delta_w \alpha$,
+from which the output function $F$ is applied to produce the output value $F \Delta_w \alpha \in \Q$.
+% 
+For this last step, $F$ is extended from nonterminals to configurations homomorphically
+$F \beta = \beta(F X_1, \dots, F X_k)$. % (i.e., polynomial evaluation).
+%
+The series \emph{recognised} by the automaton $\AA$ is $\Asem \AA {X_1}$.
+
+\begin{remark}
+    The class of series recognised by linear Hadamard automata
+    coincide with Schützenberger's recognisable series~\cite{Schutzenberger:IC:1961},
+    which have been discussed in~\cref{sec:recognisable}.
+\end{remark}
+
+\begin{example}
+    \label{ex:Hadamard automaton 1}
+    Revisiting~\cref{ex:intro:1} in the syntax of Hadamard automata,
+    we have a single nonterminal $X = \set{A}$,
+    output function $F_c$ defined by $F_c A := c$ ($c \in \Q$),
+    and transitions by
+    %
+    \begin{align*}
+        \Delta_{a_1} A := A^2
+            \quad\text{and}\quad
+                \Delta_{a_2} A := 1 - A^2.
+    \end{align*}
+    %
+    For instance, when $c = 0$ starting from the initial configuration $A$ and reading input $u = a_1 a_2$
+    we obtain configuration $\Delta_{a_2} \Delta_{a_1} A = \Delta_{a_2} A^2 = (1 - A^2)^2$
+    and thus $\Asem \AA A_u = 1$.
+    %
+    Reading $v = a_2 a_1$ yields a different configuration
+    $\Delta_{a_1} \Delta_{a_2} A = 1 - A^4$,
+    however $\Asem \AA A_v = 1$.
+    %
+    In fact, $\Asem \AA A_w$ is the count modulo $2$ of the number of $a_2$'s in $w$,
+    and thus $\Asem \AA A$ is a commutative series.
+
+    It can be checked that also the output functions $F_1, F_{-1}$
+    defined by $F_1 A := 1$, resp., $F_{-1} A := -1$
+    give rise to commutative series.
+    %
+    However, no other choice does.
+    %
+    For instance, $F_2$ defined by $F_2 A := 2$ does not yield a commutative series,
+    since $\Asem \AA A_{a_1 a_2} = (1 - 2^2)^2 = 9$,
+    but $\Asem \AA A_{a_2 a_1} = 1 - 2^4 = -15$.
+\end{example}
+
+A Hadamard automaton endows the algebra of configurations
+with the structure of a difference algebra of polynomials
+$\tuple{\poly \Q X; 0, 1, +, \cdot, (\Delta_a)_{a \in \Sigma}}$.
+%
+This allows us to connect the difference algebra of configurations
+with the difference algebra of Hadamard series they recognise.
+% In the next lemma we show that the semantics function connects
+% the difference algebra of configurations with the difference algebra of series.
+%
+\begin{restatable}[Properties of the semantics]{lemma}{lemPropertiesofSemantics}
+    \label{lem:Hadamard automata - properties of the semantics}
+    The semantics of a Hadamard automaton is a \emph{homomorphism} from
+    the difference algebra of polynomials
+        $\tuple{\poly \Q X; 0, 1, +, \cdot, (\Delta_a)_{a \in \Sigma}}$
+    to the difference Hadamard algebra of series 
+        $\tuple{\series \Q \Sigma; \zero, \one, +, \hadamard, (\deriveleft a)_{a \in \Sigma}}$.
+    %
+    In other words, $\Asem \AA 0 = \zero$, $\Asem \AA 1 = \one$,
+    and, for all $\alpha, \beta \in \poly \Q X$,
+    %
+    \begin{align}
+        \label{eq:hadamard:sem:scalar-product}
+        \Asem \AA {c \cdot \alpha}
+            &= c \cdot \Asem \AA \alpha 
+            && \forall c \in \Q, \\
+        \label{eq:hadamard:sem:sum}
+        \Asem \AA {\alpha + \beta}
+            &= \Asem \AA \alpha + \Asem \AA \beta, \\
+        \label{eq:hadamard:sem:product}
+            \Asem \AA {\alpha \cdot \beta}
+            &= \Asem \AA \alpha \hadamard \Asem \AA \beta, \\
+        \label{eq:hadamard:sem:derivation}
+        \Asem \AA {\Delta_a \alpha}
+            &= \deriveleft a (\Asem \AA \alpha)
+            && \forall a \in \Sigma.
+    \end{align}
+\end{restatable}
+\begin{proof}
+    Property $\Asem \AA 0 = \zero$ is trivial,
+    and $\Asem \AA 1 = \one$ holds by definition:
+    $\coefficient w \Asem \AA 1 = F \Delta_w 1 = F 1 = 1$.
+    %
+    Property~\cref{eq:hadamard:sem:derivation}
+    holds by definition of the semantics.
+    %
+    Properties~\cref{eq:hadamard:sem:scalar-product} and~\cref{eq:hadamard:sem:sum} follow from linearity of $F$ and $\Delta_w$.
+    %
+    Finally, for property~\cref{eq:hadamard:sem:product}, we argue coinductively
+    (the use of the coinductive assumption is marked by ``!''):
+    %
+    \begin{align*}
+        \coefficient \e( \Asem \AA {\alpha \cdot \beta})
+        &= F (\alpha \cdot \beta)
+        = F \alpha \cdot F \beta
+        = \coefficient \e (\Asem \AA) \alpha \cdot \coefficient \e (\Asem \AA \beta)
+        = \coefficient \e (\Asem \AA \alpha \hadamard \Asem \AA \beta), \text{ and } \\
+        %
+        \deriveleft a (\Asem \AA {\alpha \cdot \beta})
+            &= \Asem \AA {\Delta_a (\alpha \cdot \beta)}
+            = \Asem \AA {\Delta_a \alpha \cdot \Delta_a \beta}
+            \stackrel ! = \Asem \AA {\Delta_a \alpha} \hadamard \Asem \AA {\Delta_a \beta}
+            = \deriveleft a \Asem \AA \alpha \hadamard \deriveleft a \Asem \AA \beta
+            = \deriveleft a (\Asem \AA \alpha \hadamard \Asem \AA \beta). \qedhere
+    \end{align*}
+\end{proof}
+
+\begin{remark}[Hadamard vs.~polynomial automata]
+    \label{rem:Hadamard and polynomial automata}
+    Hadamard automata are closely related to~\emph{polynomial automata}~\cite{BenediktDuffSharadWorrell:PolyAut:LICS:2017},
+    a common generalisation of weighted automata~\cite{Schutzenberger:IC:1961}
+    and vector addition systems~\cite{Mayr:STOC:1981}.
+    %
+    A state in a polynomial automaton is a tuple of rational numbers,
+    which upon reading an input letter is modified by applying a polynomial update function;
+    at the end of the run a polynomial output function is applied to produce the final weight.
+    %
+    To compare, Hadamard automata start from an initial polynomial
+    and modify it by applying polynomial endomorphisms;
+    at the end of the computation the state polynomial is evaluated on a particular tuple of rational numbers.
+    %
+    The two models are equivalent, up to reversal of the input:
+    A series $f$ is recognised by a Hadamard automaton
+    iff its reversal $f^R$ is recognised by a polynomial automaton.
+    %
+    %L: reversal already defined
+    %(The \emph{reversal} of $f$ is the series $f^R$ mapping $a_1 \cdots a_n$ to $f(a_n \cdots a_1)$.)
+    %
+    We show this equivalence in detail in~\cref{app:polynomial automata}.
+    
+    Zeroness for polynomial automata is decidable with Ackermann complexity
+    \-\cite[Corollary 1]{BenediktDuffSharadWorrell:PolyAut:LICS:2017},
+    by an algorithm based on Hilbert's finite basis theorem
+    originating in the work of Novikov and Yakovenko~\cite{NovikovYakovenko:1999}.
+    %
+    Since zeroness is invariant under reversal,
+    this result also applies to Hadamard automata.
+    %
+    Since commutativity is invariant under reversal,
+    our results also apply to polynomial automata.
+
+    In the special case of an input alphabet with just one letter $\Sigma = \set a$,
+    Hadamard (and polynomial) automata specialise to \emph{polynomial recursive sequences}\-
+    \cite{Cadilhac:Mazowiecki:Paperman:Pilipczuk:Senizergues:ToCS:2021}.
+    %
+    They have also been considered in~\cite{BorealeGorla:CONCUR:2021} in a coalgebraic setting,
+    where zeroness is shown to be decidable by the same algorithm as for polynomial automata above
+    specialised to $\Sigma = \set a$~\cite[Theorem 4.1]{BorealeGorla:CONCUR:2021},
+    however without complexity analysis.
+    %
+    It is currently an open problem to find an algorithm deciding the equality problem for polynomial recursive sequences
+    of elementary complexity~\cite{ClementeDontenBuryMazowieckiPilipczuk:STACS:23}.
+
+    Over more general commutative semirings,
+    % (which are more general than the field of rational numbers considered in this paper),
+    polynomial automata have been introduced as
+    \emph{alternating weighted automata}~\cite{KostolanyiMisun:TCS:2018},
+    further studied in~\cite{Grabolle:EPTCS:2021}
+    (albeit without algorithmic results).
+\end{remark}
+
+The following lemma states that Hadamard automata recognise precisely the Hadamard-finite series.
+%
+Its proof relies on~\cref{lem:Hadamard automata - properties of the semantics,lem:Hadamard finite - working definition}.
+%
+\begin{restatable}{lemma}{lemHadamardAutomataAndSeries}
+    \label{lem:Hadamard automata and series}
+    A series is recognised by a Hadamard automaton if, and only if,
+    it is Hadamard finite.
+\end{restatable}
+\begin{proof}
+    % The proof is a direct consequence of the definitions.
+    %
+    For the ``only if'' direction, let $f = \Asem \AA {X_1}$
+    be recognised by a Hadamard automaton $\AA =\tuple{\Sigma, X, F, \Delta}$
+    with nonterminals $X = \tuple{X_1, \dots, X_k}$.
+    %
+    We show that $f$ is Hadamard finite
+    by applying~\cref{lem:Hadamard finite - working definition}.
+    %
+    Consider the Hadamard algebra $A := \poly \Q {f_1,\dots, f_k}_{\hadamard}$
+    finitely generated by series $f_i := \Asem \AA {X_i}$ for all $1 \leq i \leq k$.
+    %
+    Clearly $f \in A$.
+    %
+    Now consider generator $f_i$ and input symbol $a \in \Sigma$,
+    and we need to show $\deriveleft a f_i \in A$.
+    %
+    By~\cref{lem:Hadamard automata - properties of the semantics},
+    the semantics is a homomorphism of difference algebras, and thus
+    %
+    $\deriveleft a f_i
+        = \deriveleft a {(\Asem \AA {X_i})}
+        = \Asem \AA {\Delta_a X_i}
+        = (\Delta_a X_i)(\Asem \AA {X_1}, \dots \Asem \AA {X_k})
+        = (\Delta_a X_i)(f_1, \dots, f_k) \in A$,
+    as required.
+
+    For the ``if'' direction, let $f \in \series \Q \Sigma$ be Hadamard finite.
+    %
+    By~\cref{lem:Hadamard finite - working definition},
+    there are series $f_1, \dots, f_k \in \series \Q \Sigma$ with $f = f_1$
+    generating a Hadamard algebra $A = \poly \Q {f_1, \dots, f_k}_{\hadamard}$
+    \st, for every generator $f_i$ and input symbol $a \in \Sigma$,
+    there is a polynomial $p_i^a \in \poly \Q {X_1, \dots, X_k}$
+    \st~$\deriveleft a f_i = p_i^a(f_1, \dots, f_k)$.
+    %
+    We have all ingredients to build a Hadamard automaton recognising $f_1$.
+    %
+    Consider the automaton $\AA = \tuple{\Sigma, X, F, \Delta}$
+    with nonterminals $X := \tuple{X_1, \dots, X_k}$,
+    output mapping $F(X_i) := \coefficient \e f_i$
+    and transitions
+    %
+    \begin{align*}
+        \Delta_a(X_i) := p_i^a(X_1, \dots, X_k),
+        \quad \text{for all } 1 \leq i \leq k \text{ and } a \in \Sigma.
+    \end{align*}
+    %
+    The proof is concluded by showing $\Asem \AA {X_i} = f_i$ for every $1 \leq i \leq k$.
+    We argue coinductively.
+    First, the two series have the same constant term by construction,
+    %
+    $\coefficient \e {(\Asem \AA{X_i})} = F \Delta_\e X_i = F X_i = \coefficient \e f_i$.
+    %
+    Second, the tails agree
+    %
+    \begin{align*}
+        \deriveleft a {(\Asem \AA {X_i})}
+        &= \Asem \AA {\Delta_a X_i} = 
+            &&\text{(by~\cref{lem:Hadamard automata - properties of the semantics})} \\
+        &= \Asem \AA {p_i^a(X_1, \dots, X_k)} = 
+            &&\text{(def.~of $\Delta_a$)} \\
+        &= p_i^a(\Asem \AA {X_1}, \dots, \Asem \AA {X_k}) = 
+            &&\text{(by~\cref{lem:Hadamard automata - properties of the semantics})} \\
+        &= p_i^a(f_1, \dots, f_k) = 
+            &&\text{(by~coinduction)} \\
+        &= \deriveleft a f_i.
+            &&\text{(def.~of $p_i^a$)} \qquad \qedhere
+    \end{align*}
+\end{proof}
+
+\begin{example}
+    \label{ex:Hadamard finite equations 1}
+    We illustrate~\cref{lem:Hadamard automata and series}
+    on the Hadamard automaton from~\cref{ex:Hadamard automaton 1}.
+    Let $f := \Asem \AA A$.
+    %
+    The corresponding Hadamard-finite equations are
+    %
+%    \begin{align*}
+    $\deriveleft {a_1} f = f^2$ and $\deriveleft {a_2} f = \one - f^2$.
+    % \end{align*}
+    %
+    (The square operation is to be understood as Hadamard square,
+    \ie, $f^2 = f \hadamard f$;
+    recall that $\one = \sum_{w \in \Sigma^*} 1 \cdot w$ is the Hadamard identity.)
+    %
+    It follows that $\poly \Q {f}_{\hadamard}$
+    is a difference Hadamard algebra, and thus $f$ is Hadamard finite.
+\end{example}
+
+\begin{theorem}
+    \label{thm:Hadamard prevariety}
+    The class of Hadamard-finite series is an effective prevariety.
+\end{theorem}
+\begin{proof}
+    The two closure conditions~\cref{prevariety:A} and~\cref{prevariety:B}
+    follow from~\cref{lem:Hadamard closure properties}.
+    %
+    By~\cref{lem:Hadamard automata and series} and~\cref{rem:Hadamard and polynomial automata},
+    the equality problem for Hadamard-finite series
+    is (effectively) equivalent to the equality problem for polynomial automata,
+    and the latter is decidable by~\cite[Corollary 1]{BenediktDuffSharadWorrell:PolyAut:LICS:2017}.
+\end{proof}
+
+We now have all ingredients to prove our main result for Hadamard-finite series.
+%
+\begin{theorem}
+    \label{thm:Hadamard-finite series - decidable commutativity}
+    The commutativity problem for Hadamard-finite series (equivalently, Hadamard and polynomial automata) is Ackermann-complete.
+\end{theorem}
+\begin{proof}
+    Thanks to~\cref{thm:commutativity for effective prevarieties} and \cref{thm:Hadamard prevariety},
+    the commutativity problem for Hadamard-finite series is decidable.
+    %
+    In fact, we have reduced the commutativity problem over alphabet $\Sigma$
+    to $\card \Sigma^2 + \card \Sigma$ equivalence queries (\cf~\cref{lem:commutativity}).
+    %
+    On the other hand, by~\cref{lem:Hadamard closure properties},
+    Hadamard-finite series are effectively closed under anti-derivatives,
+    and thus by~\cref{lem:equality reduces to commutativity}
+    the equivalence problem for Hadamard-finite series
+    reduces to the commutativity problem.
+    %
+    Moreover, this reduction can be done efficiently, \ie, in polynomial time.
+    %
+    Since the complexity of equivalence for polynomial automata is Ackermann-complete\-
+    \cite[Theorem 1 + Corollary 1]{BenediktDuffSharadWorrell:PolyAut:LICS:2017},
+    the same is true for commutativity of Hadamard-finite series,
+    Hadamard and polynomial automata.
+\end{proof}
+
+\subsection{Application: Multivariate polynomial recursive sequences}
+\label{sec:multivariate polyrec}
+
+We introduce a class of multivariate recursive sequences
+generalising the univariate \emph{polynomial recursive sequences} (in short, \emph{polyrec})
+from~\cite{Cadilhac:Mazowiecki:Paperman:Pilipczuk:Senizergues:ToCS:2021}.
+%
+We will make a crucial use of~\cref{thm:Hadamard-finite series - decidable commutativity}
+to argue that this class can be presented \emph{effectively} by polynomial recursive equations.
+%
+In other words, we will show that polynomial recursive equations are a \emph{decidable syntax} for polyrec sequences:
+%
+There is an algorithm which, given in input a system of polynomial recursive equations and an initial condition,
+decides whether they actually define a (polyrec) sequence at all.
+%
+The lack of an effective presentation
+has been an obstacle to the study of a multivariate generalisation of polyrec sequences.
+
+In~\cref{sec:shift algebra} we begin with some preliminaries about multivariate sequences,
+in~\cref{sec:polyrec} we define multivariate polyrec sequences,
+whose basic properties we study in ~\cref{sec:polyrec properties}.
+%
+Finally in~\cref{sec:consistency of polyrec equations} we use~\cref{thm:Hadamard-finite series - decidable commutativity}
+to argue that their syntax is effective.
+
+\subsubsection{Difference sequence algebra}
+\label{sec:shift algebra}
+
+Fix a dimension $d \in \N_{\geq 1}$.
+%
+For every $1 \leq j \leq d$,
+by $e_j$ we denote the $j$-th unit vector in $\N^d$.
+%
+A \emph{multivariate sequence} is a function $f : \N^d \to \Q$.
+%
+We equip the set of sequences with the structure of a difference algebra
+$\tuple{\N^d \to \Q; \zero, \one, {+}, {\cdot}, (\shift j)_{1 \leq j \leq d}}$,
+where $\zero$, $\one$, scalar product $c \cdot f$ ($c \in \Q$),
+sum $f + g$, and Hadamard product $f \cdot g$ are defined element-wise.
+%
+Note that we overload the notation for the scalar and Hadamard product.
+%
+Moreover, the \emph{$j$-th left shift} endomorphism $\shift j$ maps a sequence $f : \N^d \to \Q$
+to the sequence $\shift j f$ \st
+%
+\begin{align*}
+    (\shift j f)(n) := f(n + e_j),
+    \quad \text{for all } n \in \N^d.
+\end{align*}
+%
+Unlike the difference algebra of Hadamard series from~\cref{sec:Hadamard algebra},
+the endomorphisms $\shift j$'s pairwise commute
+$\shift j \circ \shift h = \shift h \circ \shift j$.
+%which we call the \emph{shift algebra}.
+
+\subsubsection{Polyrec sequences}
+\label{sec:polyrec}
+
+A $d$-variate sequence $f : \N^d \to \Q$ is \emph{polyrec}
+if there exist $k \in \N_{\geq 1}$,
+auxiliary sequences $f_1, \dots, f_k : \N^d \to \Q$ with $f = f_1$,
+and polynomials $p^{(j)}_i \in \poly \Q {y_1, \dots, y_k}$ for all $1 \leq i \leq k$ and $1 \leq j \leq d$, \st
+%
+\begin{align}
+    \label{eq:polyrec}
+    \shift j f_i
+        = p^{(j)}_i(f_1, \dots, f_k),
+        \quad \forall 1 \leq i \leq k, 1 \leq j \leq d.
+\end{align}
+%
+%for all $1 \leq i \leq k$ and $1 \leq j \leq d$.
+%
+In other words, for each $f_i$ and coordinate $1 \leq j \leq d$
+there is a distinct recursive equation
+specifying how future values can be computed from the current one.
+%
+We call systems of the form~\cref{eq:polyrec} \emph{systems of polyrec equations}.
+%
+Notice that the definition of a polyrec sequence contains the \emph{promise} that $f_1, \dots, f_k$ exist solving the polyrec equations,
+however it is not trivial to establish whether solutions of polyrec equations exist,
+and thus it is not clear whether polyrec sequences have an effective syntax.
+%
+We will return to this important issue in~\cref{sec:consistency of polyrec equations}.
+
+The univariate case $d = 1$ corresponds to the polyrec sequences
+from~\cite{Cadilhac:Mazowiecki:Paperman:Pilipczuk:Senizergues:ToCS:2021},
+a rich class containing the linear recursive sequences (such as the Fibonacci numbers),
+as well as fast growing sequences such as $2^{2^n}$.
+%
+Notice that in this case every initial condition extends (uniquely) to a solution of a system of polyrec equations~\cref{eq:polyrec},
+and thus polyrec equations are an effective syntax for univariate polyrec sequences.
+%
+%L: this was said before
+%The zeroness and equivalence problems for univariate polyrec sequences are decidable
+%(with Ackermann complexity~\cite{BenediktDuffSharadWorrell:PolyAut:LICS:2017}),
+%and whether there is an elementary algorithm is currently an open problem
+%(\cf~\cite{ClementeDontenBuryMazowieckiPilipczuk:STACS:23}).
+%
+In order to develop intuition, we show below some examples of polyrec sequences.
+%
+\begin{example}
+    We begin with a simple example, univariate and linear.
+    %
+    The \emph{Fibonacci sequence} $F : \N \to \Q$
+    is well-known to satisfy the linear recursion $F(n+2) = F(n+1) + F(n)$.
+    %
+    We can turn this into the polyrec format by introducing an auxiliary sequence $G : \N \to \Q$ \st\-
+    %
+    $\shift 1 F = F + G$ and $\shift 1 G = F$.
+    %
+    % In fact, the difference equations above are even linear (with constant coefficients),
+    % and thus the Fibonacci sequence is a linear recursive sequence.
+    In this way, one shows that all linear recursive sequences are polyrec.
+\end{example}
+
+\begin{example}
+    \label{ex:polyrec 1}
+    We now consider a bivariate example $f : \N^2 \to \Q$.
+    %
+    For every $n_1, n_2 \in \N$, let 
+    $f(n_1, n_2) := 2^{2^{n_1}} \cdot 2^{3^{n_2}}$.
+    %
+    Introducing auxiliary sequences $g(n_1, n_2) := 2^{2^{n_1}}$ and $h(n_1, n_2) := 2^{3^{n_2}}$
+    we have polyrec equations
+    %
+    \begin{align*}
+        \arraycolsep=1pt
+        \begin{array}{rl}
+            \shift 1 f &= f \cdot g, \\
+            \shift 2 f &= f \cdot h^2,
+        \end{array}
+        \quad
+        \begin{array}{rl}
+            \shift 1 g &= g^2, \\
+            \shift 2 g &= g,
+        \end{array}
+        \quad
+        \begin{array}{rl}
+            \shift 1 h &= h, \\
+            \shift 2 h &= h^3.
+        \end{array}
+    \end{align*}
+    % and thus $f, g, h$ are polyrec.
+\end{example}
+
+\begin{example}
+    The bivariate factorial $f(n_1, n_2) := n_1! \cdot n_2!$ satisfies the recursion
+    %
+    \begin{align*}
+        f(n_1+1, n_2) &= (\underline {n_1} + 1) \cdot f(n_1, n_2), \\
+        f(n_1, n_2+1) &= (\underline {n_2} + 1) \cdot f(n_1, n_2).
+    \end{align*}
+    %
+    This is not in the polyrec format~\cref{eq:polyrec},
+    because of the two underlined occurrences of the index variables $n_1, n_2$.
+    %
+    Linear recursions with coefficients polynomial in $n_1, \dots, n_d$, as above,
+    are called \emph{P-recursive}~\cite{Zeilberger:JMAA:1982}.
+    %
+    We can introduce auxiliary sequences $g(n_1, n_2) := n_1$ and $h(n_1, n_2) := n_2$
+    and transform P-recursions into polyrec equations
+    %
+    \begin{align*}
+        \arraycolsep=1pt
+        \begin{array}{rl}
+            \shift 1 f &= (g+\one) \cdot f, \\
+            \shift 2 f &= (h+\one) \cdot f,
+        \end{array}
+        \quad
+        \begin{array}{rl}
+            \shift 1 g &= \one + g, \\
+            \shift 2 g &= g,
+        \end{array}
+        \quad
+        \begin{array}{rl}
+            \shift 1 h &= h, \\
+            \shift 2 h &= \one + h.
+        \end{array}
+    \end{align*}
+    %
+    A similar argument shows that $n_1! + n_2!$ is polyrec.
+    %
+    In fact, polyrec include all $P$-recursive definitions with a constant leading term
+    (\cf~\cite[Proposition 3.6]{Lipshitz:D-finite:JA:1989}),
+    also called \emph{monic $P$-recursive}\-
+    \cite[page 5]{Buna-MargineanChevalShirmohammadiWorrell:POPL:2024}.
+    %
+    For instance, $n!$ is monic $P$-recursive since $(n+1)! = (n+1) \cdot n!$,
+    but the natural recursion for the \emph{Catalan numbers} $C_n$, which is $\underline {(n+2)} \cdot C_{n+1} = (4n+2) \cdot C_n$, is not
+    (the underlined term is non-constant).
+    %
+    In fact, the Catalan numbers are known not to be polyrec~\cite[Corollary 4.1]{Cadilhac:Mazowiecki:Paperman:Pilipczuk:Senizergues:ToCS:2021},
+    and thus they are not monic P-recursive either.
+\end{example}
+%
+\begin{remark}
+    All the examples so far are sums of products of univariate polyrec sequences.
+    %
+    For examples not of this form,
+    consider the polyrec sequences $(n_1 + n_2)!$ and $2^{2^{n_1 + n_2}}$.
+    %
+    This shows that the characterisation of multivariate \emph{linear} recursive sequences
+    in~\cite[Proposition 2.1]{Karhumaki:TCS:1977} as sums of products of univariate linear recursive sequences
+    does not generalise to polyrec.
+\end{remark}
+%
+\noindent
+More examples will be shown in~\cref{sec:consistency of polyrec equations}.
+
+\subsubsection{Closure properties of polyrec sequences.}
+\label{sec:polyrec properties}
+%
+Multivariate polyrec sequences are a well-behaved class of sequences.
+%
+They are closed under the algebra operations (scalar product, sum, and Hadamard product),
+shifts $\shift j f$, sections, and diagonals.
+%
+The last two operations have not been defined yet.
+%
+A \emph{section} of a {$d$-variate} sequence $f : \N^d \to \Q$
+is an {$e$-variate} sequence with $e < d$ which is obtained from $f$
+by fixing one or more coordinates to a constant value~\cite[Definition 3.1]{Lipshitz:D-finite:JA:1989}.
+%
+For instance, if $f(n_1, n_2)$ is a bivariate sequence, then $g(n_1) := f(n_1, 7)$ is a section thereof,
+obtained by fixing the second coordinate to be $n_2 := 7$.
+%
+Since sections are defined element-wise,
+they commute with the operations of scalar product, sum, and Hadamard product,
+and with shifts not involving the coordinates being fixed.
+%
+It follows that sections of polyrec sequences are polyrec.
+
+\begin{example}
+    For instance, if $\shift 1 f = \one - f^2$,
+    then its section $g$ satisfies the initial condition $g(0) = f(0, 7)$
+    and the same recursive equation $\shift 1 g = \one - g^2$,
+    preserving the polyrec format
+    (the information about $\shift 2 f$ is discarded when fixing the second coordinate).
+\end{example}
+
+A \emph{diagonal} of a {$d$-variate} sequence $f : \N^d \to \Q$
+is an $e$-variate sequence with $e < d$ which is obtained from $f$
+by requiring a subset of the coordinates to be equal
+and then by projecting them to a single coordinate\-
+\cite[Definition 2.6]{Lipshitz:D-finite:JA:1989}.
+%
+For instance, the sequence $h : \N^2 \to \Q$ \st\-
+$h(n_1, n_3) := f(n_1, n_1, n_3)$, for all  $n_1, n_3 \in \N$,
+is the diagonal of $f : \N^3 \to \Q$
+obtained by identifying the first two coordinates.
+%
+Again, this is an element-wise operation,
+and thus it commutes with the operations of scalar product, sum, Hadamard product,
+and of shifts not involving the coordinates being identified.
+%
+Consequently, diagonals of polyrec sequences are polyrec.
+
+\begin{example}
+    For instance, if $\shift 1 f = \one - f^2$, $\shift 2 f = f^3$, and $\shift 3 f = \one + 2 \cdot f$
+    then the diagonal $h$ satisfies $\shift 1 h = (\one - h^2)^3$ and $\shift 2 h = \one + 2 \cdot h$,
+    preserving the polyrec format.
+    %
+    % Note that this is a conditional statement
+    % and we do not claim that such an $f$ exists.
+    %
+    (By composing in the other order, we get $\shift 1 h = 1 - (h^3)^2$, but one equation suffices:
+    If $f$ exists, then it will satisfy both equations.)
+\end{example}
+
+%
+%Polyrec sequences constitute an effective difference algebra
+%(this will follow from our isomorphism lemma~\cref{lem:Hadamard isomorphism lemma}).
+
+\subsubsection{Consistency of polyrec equations}
+\label{sec:consistency of polyrec equations}
+
+So far we have defined a class of multivariate sequences, and we have argued that this class is robust
+by presenting examples and closure properties.
+%
+However, we have sidestepped a crucial issue,
+namely whether the equations~\cref{eq:polyrec} together with an initial condition
+do actually define a sequence.
+%
+By the shape of the equations,
+a given initial condition gives rise to \emph{at most one} solution.
+%
+However, whether a solution exists at all is nontrivial.
+%
+\begin{problem}[Polyrec consistency problem]
+    \label{problem:polyrec consistency}
+    The \emph{consistency problem} for polyrec equations
+    takes as input a set of polyrec equations~\cref{eq:polyrec}
+    together with an initial condition $c \in \Q^k$,
+    and it amounts to decide whether there is a sequence solution $f \in (\N^d \to \Q)^k$ 
+    extending the initial condition $f(0) = c$.
+\end{problem}
+%
+\noindent
+We emphasise that~\cref{problem:polyrec consistency} is about polyrec equations,
+which may or may not represent a sequence,
+and the question is finding out which one is the case.
+%
+We show that~\cref{problem:polyrec consistency} is decidable,
+thus showing that the syntax of polyrec sequences~\cref{eq:polyrec} is \emph{effective}.
+%
+In the univariate case $d = 1$,
+\emph{every} initial condition extends to a solution,
+and thus the consistency problem is trivial.
+%
+However, in the multivariate case $d \geq 2$,
+whether a system of equations~\cref{eq:polyrec}
+actually defines a (tuple of) sequence(s)
+involves an infinite number of constraints to be satisfied\-
+(\cf~\cref{fig:polyrec constraints}).
+%
+In order to develop intuition, we provide some examples
+illustrating the possible situations that may arise.
+
+\begin{example}[All initial conditions extend to a solution]
+    Let $d = 2$ and consider polyrec equations
+    %
+    \begin{align*}
+        \shift 1 f = f^3
+            \quad\text{and}\quad
+                \shift 2 f = f^5.
+    \end{align*}
+    %
+    The update functions $p(x) := x^3$ and $q(x) := x^5$
+    commute identically $p(q(x)) = q(p(x)) = x^{15}$.
+    %
+    This is a very strong condition,
+    implying that \emph{every} initial condition $f(0, 0) := c \in \Q$
+    extends to a sequence solution,
+    namely $f(n_1, n_2) = c^{3^{n_1} \cdot 5^{n_2}}$.
+\end{example}
+
+\begin{example}[Only some initial conditions extend to a solution]
+    \label{ex:polyrec equations}
+    Revisiting~\cref{ex:intro:2},
+    let $d = 2$ and consider polyrec equations
+    %
+    \begin{align*}
+        \shift 1 f = f^2
+            \quad\text{and}\quad
+                \shift 2 f = \one - f^2.
+    \end{align*}
+    %
+    We claim that the set of initial values extending to a solution is $\set{-1, 0, 1}$.
+    %
+    Indeed, if we let $p(x) := x^2$ and $q(x) := 1 - x^2$,
+    then we obtain the equation $p(q(x)) = q(p(x))$.
+    %
+    In other words, if the initial condition $x$ extends to a sequence solution,
+    then it is necessarily a root of $p(q(x)) - q(p(x)) = (1-x^2)^2 - (1 - x^4) = 2 x^2(1-x)(1+x)$.
+    %
+    Over $\Q$, the latter polynomial has precisely three solutions $x \in \set{-1, 0, 1}$.
+    % p(q(x)) = (1 -x^2)^2 = 1 - 2x^2 + x^4
+    % q(p(x)) = 1 - x^4
+    % => x = 0 or x^2 = 1
+    %
+    Moreover, in fact $x \in \set{-1, 0, 1}$ is also sufficient for the existence of a sequence solution,
+    since this set is stable under $p(x)$ and $q(x)$:
+    %
+    \begin{center}
+    \newcommand{\littlediagram}[4]{
+        \tikzset{x=8mm, y=8mm, every node/.append style={font=\footnotesize}}
+        \begin{tikzpicture}
+            \draw[step=8mm] (0,0) grid (1,1);
+            \foreach \i in {0,...,1}
+                \foreach \j in {0,...,1}
+                    \fill (\i,\j) circle (1pt);
+            \draw[very thick, ->] (0,0) -- (1,0) node[midway, below] {$p$};
+            \draw[very thick, ->] (0,0) -- (0,1) node[midway, left] {$q$};
+            \draw[very thick, ->] (0,1) -- (1,1) node[midway, above] {$p$};
+            \draw[very thick, ->] (1,0) -- (1,1) node[midway, right] {$q$};
+            \fill[black]
+                (0,0) circle (2pt) node[below] {$#1$}
+                (1,0) circle (2pt) node[below] {$#2$}
+                (0,1) circle (2pt) node[above] {$#3$}
+                (1,1) circle (2pt) node[above] {$#4$};
+            \end{tikzpicture}
+        }
+    \begin{tabular}{ccc}
+        \littlediagram {-1} 1 0 0&
+        \littlediagram 0 0 1 1&
+        \littlediagram 1 1 0 0
+    \end{tabular}
+    \end{center}
+    %
+    Consequently, all and only $f(0, 0) \in \set{-1, 0, 1}$ extend to a solution.
+\end{example}
+
+% \begin{example}[Infinitely many initial conditions extend to a solution]
+%     \label{ex:infinitely any initial conditions}
+%     The equations from~\cref{ex:polyrec 1} admit a solution for every initial condition
+%     $c := f(0, 0), d := g(0, 0), e := h(0, 0) \in \Q$ \st~$c = d \cdot e$.
+%     In this case the unique solution is
+%     $f(n_1, n_2) = d^{2^{n_1}} \cdot e^{3^{n_2}}$,
+%     $g(n_1, n_2) = d^{2^{n_1}}$,
+%     $h(n_1, n_2) = e^{3^{n_2}}$.
+%     %
+%     In this case we have infinitely many initial conditions extending to a solution.
+%     \lorenzo{In fact all initial conditions extend to a solution. fix this}
+% \end{example}
+
+\begin{example}[No initial condition extends to a solution]
+    Let $d = 2$ and consider the polyrec equations
+    %
+    \begin{align}
+        \label{eq:polyrec example 2}
+        \shift 1 f = f^2
+            \quad\text{and}\quad
+                \shift 2 f = f + \one.
+    \end{align}
+    %
+    Let the initial condition be $f(0, 0) := c \in \Q$.
+    From the first equation we have $f(1, 0) = c^2$,
+    and from the second $f(0, 1) = c+1$.
+    %
+    But then we can obtain $f(1, 1)$ in two ways,
+    %
+    $c^2 + 1$ and $(c+1)^2 = c^2 + 2c + 1$,
+    %
+    implying $c = 0$ and thus $f(1, 1) = 1$.
+    %
+    But now we compute $f(2, 2)$ in two ways
+    obtaining $1^2 + 1 = 2$ and $(1+1)^2 = 4$.
+    This leads to a contradiction,
+    and thus there is no initial condition extending to a solution of~\cref{eq:polyrec example 2}.
+\end{example}
+
+% perhaps not interesting
+% \begin{example}[Exactly one initial condition extends to a solution]
+%     Let $d = 2$ and consider the polyrec equations
+%     %
+%     \begin{align}
+%         \label{eq:polyrec example 3}
+%         \shift 1 f = f^2
+%             \quad\text{and}\quad
+%                 \shift 2 f = 2\cdot f.
+%     \end{align}
+%     %
+%     Clearly the initial condition $f(0, 0) = 0$
+%     extends to the trivial solution $f = 0$.
+%     %
+%     In fact, no other initial condition $c := f(0, 0) \neq 0$ extends to a solution:
+%     Computing $f(1, 1)$ in two ways we obtain $2 \cdot c^2 = (2c)^2$,
+%     which is impossible when $c \neq 0$.
+% \end{example}
+
+%We are thus left with the problem of deciding whether a given system of polyrec equations~\cref{eq:polyrec} admits a solution.
+%When the initial condition $c \in \Q^k$ is given,
+%this is the same as checking membership $c \in C$ in the algebraic variety $C$ from~\cref{rem:algebraic variety of initial conditions}.
+%
+%When the initial condition is not fixed, the task is to decide whether $C$ is nonempty.
+\noindent
+\cref{problem:polyrec consistency} is an instance of the more general problem
+solvability in sequences for systems of polynomial difference equations,
+not necessarily of the polyrec kind~\cref{eq:polyrec}.
+%
+The latter problem is undecidable in full generality, as we now recall.
+%
+\begin{remark}
+    \label{rem:undecidability of polynomial difference equations}
+    The more general problem of solvability in sequences
+    for systems of polynomial difference equations
+    is undecidable~\cite[Proposition 3.9]{PogudinScanlonWibmer:2020}.
+    %
+    Nonlinear bivariate systems of two unknowns $k = d = 2$ suffice.
+    %
+    The undecidable systems~\cite[Eq.~(5) on pg.~21]{PogudinScanlonWibmer:2020}
+    in our notation can be written as follows:
+    %
+    \begin{align*}
+        (f - 1)(f - 2) \cdots (f - N) &= 0, \\
+        (g - 1)(g - 2) \cdots (g - N) &= 0, \\
+        \prod_{i = 1}^\ell ((a_i - f)^2 + (b_i - \shift 2 f)^2 + (c_i - g)^2 + (d_i - \shift 1 g)^2) &= 0,
+    \end{align*}
+    %
+    for suitable constants $N, a_1, \dots, a_\ell, b_1, \dots, b_\ell, c_1, \dots, c_\ell \in \N$,
+    where for simplicity of notation, we have identified $n \in \N$ with $n \cdot \one$.
+    %
+    The equations above encode plane tiling problems:
+    the first two constraints force $f, g : \N^2 \to \set {1, \dots, N}$ to range over a finite set,
+    and the last equation encodes horizontal and vertical tiling constraints.
+    % (we do not need the details of the encoding here).
+    %
+    None of the equations above is in the polyrec format~\cref{eq:polyrec}.
+\end{remark}
+
+Consequently, in order to solve~\cref{problem:polyrec consistency}
+we need to exploit the special shape of polyrec equations.
+%
+To this end, we develop a connection between sequence solutions of polyrec equations~\cref{eq:polyrec}
+and Hadamard-finite series.
+%
+We make the very simple observation
+that number sequences and commutative series contain the same information.
+%
+For instance, the sequence $2^{n_1} 3^{n_2}$ is ``the same'' as the series that maps
+$w \in \set{a_1, a_2}^*$ to $2^{\multiplicity {a_1} w} 3^{\multiplicity {a_2} w}$.
+%
+This is made precise by saying that the difference sequence algebra
+$\tuple{\N^d \to \Q; \zero, \one, +, \cdot, (\shift j)_{1 \leq j \leq d}}$
+and the difference Hadamard algebra of commutative series
+$\tuple{\commseries \Q \Sigma; \zero, \one, +, \hadamard, (\deriveleft {a_j})_{1 \leq j \leq d}}$
+(with $\Sigma = \set{a_1, \dots, a_d}$)
+are isomorphic.
+%
+The isomorphism maps a commutative series $f \in \commseries \Q \Sigma$
+to the number sequence $\widetilde f : \N^d \to \Q$
+\st~$\widetilde f(n_1, \dots, n_d) := f(a_1^{n_1} \cdots a_d^{n_d})$ for every $n_1, \dots, n_d \in \N$.
+%
+This map preserves the difference algebra operations, which has pleasant consequences.
+
+Given a system of polyrec equations~\cref{eq:polyrec},
+we construct a system of Hadamard-finite equations
+%
+\begin{align}
+    \label{eq:Hadamard-finite companion system}
+    \deriveleft {a_j} g_i = p^{(j)}_i(g_1, \dots, g_k),
+    \quad \forall 1 \leq i \leq k, 1 \leq j \leq d,
+\end{align}
+%
+which we call the \emph{companion system} to~\cref{eq:polyrec}.
+%
+\begin{example}
+    The polyrec equations from~\cref{ex:polyrec equations}
+    $\set{\shift 1 f = f^2, \shift 2 f = \one-f^2}$
+    yield the companion system from~\cref{ex:Hadamard finite equations 1}
+    %
+    $\set{\deriveleft {a_1} g = g^2, \deriveleft {a_2} g = \one - g^2}$.
+    %
+\end{example}
+%
+\noindent
+Every initial condition extends to a \emph{unique} series solution $g = \tuple{g_1, \dots, g_k} \in \series \Q \Sigma^k$
+of the companion system~\cref{eq:Hadamard-finite companion system},
+which can be proved by induction on the length of words.
+%
+By definition, this solution is a tuple of Hadamard-finite series.
+%
+When all components $g_1, \dots, g_k$ are commutative,
+we can extract corresponding number sequences
+$f_1 := \widetilde {g_1}, \dots, f_k := \widetilde {g_k} : \N^d \to \Q$,
+which are precisely the unique sequence solution
+to the original polyrec equations~\cref{eq:polyrec}:
+%
+\begin{align*}
+    \shift j {f_i}
+   = \shift j \widetilde {g_i}
+    = \widetilde {\deriveleft {a_j} g_i}
+    = \widetilde {\left(p^{(j)}_i(g_1, \dots, g_k)\right)}
+   = p^{(j)}_i(\widetilde {g_1}, \dots, \widetilde {g_k})
+    = p^{(j)}_i(f_1, \dots, f_k).
+    \quad \forall 1 \leq i \leq k, 1 \leq j \leq d.
+\end{align*}
+%
+On the other hand, when any component $g_i$ is noncommutative,
+\cref{eq:polyrec} does not have any number sequence solution.
+%
+To see this, it suffices to notice that any sequence solution of~\cref{eq:polyrec}
+gives rise to a commutative Hadamard-finite series solution of the companion system~\cref{eq:Hadamard-finite companion system}
+(via the inverse of the isomorphism above),
+but as we have observed~\cref{eq:Hadamard-finite companion system} has a unique, noncommutative solution.
+
+The argument above gives us an algorithm for the consistency problem:
+%
+Construct the companion system~\cref{eq:Hadamard-finite companion system}
+and check that all components of the unique Hadamard-finite series solution are commutative,
+which is decidable by~\cref{thm:Hadamard-finite series - decidable commutativity}.
+%
+\begin{theorem}
+    \label{thm:polyrec consistency}
+    The polyrec consistency problem~(\cref{problem:polyrec consistency}) is decidable
+    with Ackermann complexity.
+\end{theorem}
+% \begin{proof}
+%     Fix the initial condition $c \in \Q^k$.
+%     %
+%     Thanks to the first part of~\cref{lem:polyrec Hadamard bridge}
+%     the companion system has a unique Hadamard-finite series solution with initial condition $c$.
+%     %
+%     Thanks to the second part of the same lemma,
+%     it suffices to check whether all components of this solution are commutative.
+%     %
+%     The latter can be checked thanks to~\cref{thm:Hadamard-finite series - decidable commutativity}
+%     by running $k$ times the decision procedure for commutativity.
+% \end{proof}

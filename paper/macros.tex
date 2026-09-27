@@ -1,0 +1,397 @@
+%!TEX root main.tex
+
+% general macros
+\newcommand{\tuple}[1]{(#1)}
+\newcommand{\tuplesmall}[1]{(#1)}
+\newcommand{\goesto}[1]{\xrightarrow{#1}}
+\newcommand{\from}{\leftarrow}
+\newcommand{\e}{\varepsilon}
+\newcommand{\sep}{\mid}
+
+\newcommand{\ignore}[1]{}
+
+% English
+\newcommand{\wlg}{w.l.o.g.}
+\newcommand{\Wlg}{W.l.o.g.}
+\newcommand{\wrt}{w.r.t.}
+\newcommand{\vs}{vs.}
+\newcommand{\cf}{cf.}
+\newcommand{\eg}{e.g.}
+\newcommand{\Eg}{E.g.}
+\newcommand{\aka}{a.k.a.}
+\newcommand{\ie}{i.e.}
+\newcommand{\Ie}{I.e.}
+\newcommand{\rhs}{r.h.s.}
+\newcommand{\lhs}{l.h.s.}
+\newcommand{\egs}{EGS}
+\newcommand{\etal}{\emph{et al.}}
+\newif\ifstartedinmathmode
+\newcommand*{\st}{%s.t.~
+  \relax\ifmmode\startedinmathmodetrue\else\startedinmathmodefalse\fi
+  \ifstartedinmathmode{\;\cdot\;}\else{s.t.}\fi%
+}
+
+\makeatletter
+\providecommand*{\cupdot}{%
+  \mathbin{%
+    \mathpalette\@cupdot{}%
+  }%
+}
+\newcommand*{\@cupdot}[2]{%
+  \ooalign{%
+    $\m@th#1\cup$\cr
+    \hidewidth$\m@th#1\cdot$\hidewidth
+  }%
+}
+\makeatother
+
+% sets
+\newcommand{\A}{\mathbb A}
+\renewcommand{\AA}{\mathcal A}
+\newcommand{\B}{\mathbb B}
+\newcommand{\BB}{\mathcal B}
+\newcommand{\C}{\mathbb C}
+\newcommand{\D}{\mathbb D}
+\newcommand{\F}{\mathbb F}
+\renewcommand{\H}{\mathbb H}
+\newcommand{\N}{\mathbb N}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\R}{\mathbb R}
+\renewcommand{\S}{\mathbb S}
+\newcommand{\Sleft}{\S^{\mathsf L}}
+\newcommand{\Sright}{\S^{\mathsf R}}
+\newcommand{\Ssyn}{\S_{\text{syn}}}
+\renewcommand{\SS}{\mathcal S}
+\newcommand{\T}{\mathbb T}
+\newcommand{\Tleft}{\T^{\mathsf L}}
+\newcommand{\Tright}{\T^{\mathsf R}}
+\newcommand{\Tsyn}{\T_{\text{syn}}}
+\newcommand{\TT}{\mathcal T}
+\newcommand{\V}{\mathbb V}
+\renewcommand{\k}{\kappa}
+\renewcommand{\a}{\mathfrak a}
+
+\newcommand{\x}{\mathtt x}
+\newcommand{\y}{\mathtt y}
+\newcommand{\z}{\mathtt z}
+
+\newcommand{\FF}{\mathcal F}
+\newcommand{\GG}{\mathcal G}
+
+% maths
+\let\oldcirc\circ
+\let\circ\relax
+\DeclareMathOperator{\circ}{\oldcirc\,}
+
+\newcommand{\compose}[1]{\,\oldcirc_{#1}\,}
+
+\DeclareMathOperator{\binconv}{\ast}
+% \DeclareMathOperator{\rel}{{\ensuremath R}}
+\DeclareMathOperator{\bisimulation}{\sim}
+
+\newcommand{\rel}{\mathrel R}
+\newcommand{\relation}[1]{\mathrel {#1}}
+\newcommand{\tilderel}{\mathrel {\widetilde R}}
+\newcommand{\tilderelation}[1]{\mathrel {\widetilde {#1}}}
+
+% METAFONT mumbo-jumbo for shuffle
+% \DeclareSymbolFont{Shuffle}{U}{shuffle}{m}{n}
+% \DeclareFontFamily{U}{shuffle}{}
+% \DeclareFontShape{U}{shuffle}{m}{n}{%
+%   <-8>shuffle7%
+%   <8->shuffle10%
+% }{}
+% \DeclareMathSymbol\shuffle{\mathbin}{Shuffle}{"001}
+% \DeclareMathSymbol\cshuffle{\mathbin}{Shuffle}{"002}
+
+% \let\oldshuffle\shuffle
+% \let\shuffle\relax
+% \DeclareMathOperator{\shuffle}{\oldshuffle}
+% \newcommand{\shufflepower}[2]{{#1}^{\oldshuffle#2}}
+% \newcommand{\shinv}[1]{\shufflepower {#1}{-1}}
+
+% shuffle by hand
+% https://tex.stackexchange.com/questions/183988/how-to-make-the-shuffle-product-symbol-in-latex-math-mode
+\makeatletter
+\providecommand*{\shuffle}{%
+  \mathbin{\mathpalette\shuffle@{}}%
+}
+\newcommand*{\shuffle@}[2]{%
+  % #1: math style
+  % #2: unused
+  \sbox0{$#1\vcenter{}$}%
+  \kern .15\ht0 % side bearing
+  \rlap{\vrule height .25\ht0 depth 0pt width 2.5\ht0}%
+  \raise.1\ht0\hbox to 2.5\ht0{%
+    \vrule height 1.75\ht0 depth -.1\ht0 width .17\ht0 %
+    \hfill
+    \vrule height 1.75\ht0 depth -.1\ht0 width .17\ht0 %
+    \hfill
+    \vrule height 1.75\ht0 depth -.1\ht0 width .17\ht0 %
+  }%
+  \kern .15\ht0 % side bearing
+}
+\makeatother
+
+\let\oldcolon\colon
+\let\colon\relax
+\DeclareMathOperator{\colon}{\,:\,}
+
+\let\oldmod\mod
+\let\mod\relax
+\DeclareMathOperator{\mod}{mod}
+
+\DeclareMathOperator{\cauchy}{\ast}
+\DeclareMathOperator{\hadamard}{\odot}
+\DeclareMathOperator{\infiltration}{\uparrow}
+\DeclareMathOperator{\product}{\ast}
+% \DeclareMathOperator{\sq}{\Box}%{\circ_\C}
+% \DeclareMathOperator{\binconv}{\ast}
+\newcommand{\norm}[2]{\left| #2 \right|_{#1}}
+\newcommand{\onenorm}[1]{\norm 1 {#1}}
+\newcommand{\inftynorm}[1]{\norm \infty {#1}}
+\newcommand{\height}[1]{\inftynorm{#1}}
+\newcommand{\limplies}{\Rightarrow}
+\newcommand{\valname}{v}
+\newcommand{\val}[1]{\valname({#1})}
+\newcommand{\valpname}[1]{\valname_{#1}}
+\newcommand{\valp}[2]{\valpname {#1}({#2})}
+\newcommand{\valstar}[1]{\valname^*({#1})}
+\newcommand{\eval}[2]{\left.#1\right|_{#2}}
+\newcommand{\floor}[1]{\lfloor#1\rfloor}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\card}[1]{\left|#1\right|}
+\newcommand{\length}[2]{\left|#2\right|_{#1}}
+\newcommand{\len}[1]{\left|#1\right|}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\setof}[2]{\set{#1 \;\middle|\; #2}}
+\newcommand{\multiset}[1]{\left\{\!\left\{#1\right\}\!\right\}}
+\newcommand{\multisetof}[2]{\multiset{#1 \mid #2}}
+\newcommand{\census}[1]{\mathsf{c}\left(#1\right)}
+\newcommand{\eqclass}[2]{\left[#2\right]_{#1}}
+% \newcommand{\averagefun}{\mathsf{avg}}
+% \newcommand{\average}[2]{\averagefun_{#1}\left(#2\right)}
+\newcommand{\average}[2]{\left\{#2\right\}_{#1}}
+\newcommand{\commclass}[1]{\widetilde {#1}}
+\newcommand{\rad}[1]{\sqrt{#1}}
+\newcommand{\polyexpr}[2]{#1\{#2\}}
+\newcommand{\poly}[2]{#1[#2]}
+\newcommand{\polyof}[3]{\poly {#1} {#2 \mid #3}}
+\newcommand{\diffpoly}[2]{\poly{#1}{#2}^{(*)}}
+\newcommand{\ncpoly}[2]{#1\langle#2\rangle}
+\newcommand{\rational}[2]{#1(#2)}
+\newcommand{\Lie}[2]{\mathsf{Lie}_{#1}\langle#2\rangle}
+\newcommand{\LieDeg}[3]{\mathsf{Lie}^{#1}_{#2}\langle#3\rangle}
+\newcommand{\rat}[2]{#1(#2)}
+\newcommand{\lparenangle}{{\,\mathclap{(}\!\langle}}
+\newcommand{\rparenangle}{{\,\mathclap{\rangle}\!)}}
+\newcommand{\ncrat}[2]{#1\lparenangle#2\rparenangle}
+\newcommand{\nclaurent}[2]{#1\lparenangle\!\lparenangle#2\rparenangle\!\rparenangle}
+\newcommand{\powerseries}[2]{#1[\![#2]\!]}
+\newcommand{\algps}[2]{\powerseries {#1} {#2}_{\mathsf{alg}}}
+\newcommand{\laurentseries}[2]{#1(\!(#2)\!)}
+\newcommand{\series}[2]{#1\langle\!\langle#2\rangle\!\rangle}
+\newcommand{\lcseries}[2]{#1\langle\!\langle#2\rangle\!\rangle^{\text{LC}}}
+\newcommand{\commseries}[2]{#1\langle\!\langle#2\rangle\!\rangle^{\mathsf{comm}}}
+\newcommand{\algseries}[2]{#1\langle\!\langle#2\rangle\!\rangle_{\mathsf{alg}}}
+\newcommand{\sequences}[2]{#1[\![\N^{#2}]\!]}
+\newcommand{\matrices}[3]{#3^{#1 \times #2}}
+% \newcommand{\lin}[2]{\langle #2 \rangle_{#1}}
+% \newcommand{\linof}[3]{\lin {#1} {#2 \mid #3}}
+\newcommand{\ideal}[1]{\langle#1\rangle}
+\newcommand{\idealof}[2]{\ideal{#1 \mid #2}}
+\newcommand{\diffideal}[1]{\ideal{#1}^{(*)}}
+\newcommand{\diffidealof}[2]{\idealof{#1}{#2}^{(*)}}
+\newcommand{\module}[1]{\langle#1\rangle}
+\newcommand{\moduleof}[2]{\module{#1 \mid #2}}
+\newcommand{\lin}[2]{\mathsf{Lin}_{#2}\left(#1\right)}
+% \newcommand{\linof}[3]{\lin{#1 \mid #2} {#3}}
+\renewcommand{\dim}[1]{\mathsf{dim}\,{#1}}
+\newcommand{\leadingterm}[1]{\mathsf{lt}\,{#1}}
+\newcommand{\sem}[1]{\llbracket#1\rrbracket}
+\newcommand{\Asem}[2]{#1\sem{#2}}
+\newcommand{\support}[1]{\mathsf{supp}(#1)}
+% \newcommand{\lang}[1]{L\left(#1\right)}
+\newcommand{\bigO}[1]{O\left(#1\right)}
+\newcommand{\bigOmega}[1]{\Omega\left(#1\right)}
+\newcommand{\multiplicity}[2]{\#({#2})_{#1}}
+\newcommand{\Parikh}[1]{\mathrm c({#1})}
+\newcommand{\Parikhinv}[1]{\mathrm c^{-1}({#1})}
+\newcommand{\coefficient}[2]{[#1]#2}
+\newcommand{\restrict}[2]{\left.#1\right|_{#2}}
+\newcommand{\restrictsmall}[2]{#1|_{#2}}
+\newcommand{\equivmod}[3]{{#1} \equiv {#2}\; (\mathsf{mod}\ #3)}
+\newcommand{\ord}[1]{\mathsf{ord}(#1)}
+\newcommand{\comm}[2]{\mathsf{comm}_{#1}(#2)}
+\newcommand{\stops}[1]{\mathsf{s2p}\left(#1\right)}
+\newcommand{\pstos}[1]{\mathsf{p2s}\left(#1\right)}
+\newcommand{\iso}{\cong}
+\newcommand{\completion}[1]{\widehat{#1}}
+\newcommand{\linearspan}[2]{\mathsf{Lin}_{#1}(#2)} %{\langle#1\rangle}
+\newcommand{\inner}[2]{\langle#1, #2\rangle}
+\newcommand{\closure}[1]{\overline{#1}}
+\newcommand{\reversal}[1]{{#1}^\mathsf{rev}}
+\newcommand{\transpose}[1]{{#1}^\mathsf{T}}
+\newcommand{\id}{\mathsf{id}}
+%\newcommand{\leftright}[3]{{#2}^{#1, #3}}
+\newcommand{\leftright}[3]{\mbox{}^{#1}{#2}^{#3}}
+\newcommand{\lr}[3]{\leftright{#1}{#2}{#3}}
+\renewcommand{\iff}{\Leftrightarrow}
+
+\newcommand{\seq}[2]{\left(#1 \mapsto {#2}\right)}
+\newcommand{\derive}[1]{\delta_{#1}}
+\newcommand{\deriveleft}[1]{\delta^L_{#1}}
+\newcommand{\deriveright}[1]{\delta^R_{#1}}
+\DeclareRobustCommand{\atled}{\text{\reflectbox{$\delta$}}}
+\newcommand{\derleft}[2]{{#1}^{-1} {#2}}
+\newcommand{\derright}[2]{{#2} {#1}^{-1}}
+\newcommand{\class}[2]{[#1]_{#2}}
+\let\oldpartial\partial
+% \renewcommand{\partial}[2]{\frac {\oldpartial {#2}} {\oldpartial {#1}}}
+\renewcommand{\partial}[2]{\oldpartial_{#1}{#2}}
+\newcommand{\partialk}[3]{\oldpartial_{#1}^{#2}{#3}}
+\newcommand{\bigpartial}[2]{\frac {\oldpartial {#2}} {\oldpartial{#1}}}
+\newcommand{\dn}[2]{\mathrm d^{#1} {#2}}
+\renewcommand{\d}[1]{\dn {} {#1}}
+\newcommand{\total}[2]{\frac {\d {#1}}{\d {#2}}}
+\newcommand{\totaln}[3]{\frac {\dn {#1} {#2}}{\d {#3}^{#1}}}
+\newcommand{\jacobian}[2]{\partial{#1}{#2}}
+\newcommand{\shift}[1]{\sigma_{#1}}
+\newcommand{\deductionrule}[2]{\begin{array}{c}%
+{#1} \\ \hline {#2}%
+\end{array}}
+\newcommand{\one}{\mathbbm 1}
+\newcommand{\zero}{\mathbb 0}
+
+\newcommand{\X}{\mathcal X}
+\newcommand{\Y}{\mathcal Y}
+\newcommand{\ZZ}{\mathcal Z}
+\newcommand{\ZERO}{\mathbf 0}
+\newcommand{\ONE}{\mathbf 1}
+\newcommand{\EGS}[1]{\mathsf{EGS}[#1]}
+\newcommand{\SETSP}{\mathsf{SET}}
+\newcommand{\SET}[1]{\SETSP[#1]}
+\newcommand{\SEQSP}{\mathsf{SEQ}}
+\newcommand{\SEQ}[1]{\SEQSP[#1]}
+\newcommand{\CYCSP}{\mathsf{CYC}}
+\newcommand{\CYC}[1]{\CYCSP[#1]}
+\newcommand{\TREE}[2]{\mathsf{T}_{#2}[#1]}
+\newcommand{\CATALAN}[1]{\mathsf{T}[#1]}
+\newcommand{\CAYLEY}[1]{\mathsf{C}[#1]}
+\newcommand{\SPGRAPHS}[1]{\mathsf{SP}[#1]}
+\newcommand{\SGRAPHS}[1]{\mathsf{S}[#1]}
+\newcommand{\PGRAPHS}[1]{\mathsf{P}[#1]}
+
+\newcommand{\lneg}{\neg}
+\newcommand{\erf}{\mathrm{erf}}
+\newcommand{\arsinh}{\mathrm{arsinh}}
+\newcommand{\arcosh}{\mathrm{arcosh}}
+\newcommand{\artanh}{\mathrm{artanh}}
+\newcommand{\csch}{\mathrm{csch}}
+\newcommand{\sech}{\mathrm{sech}}
+
+% acronyms
+\newcommand{\CDF}{\textsf{CDF}}
+\newcommand{\CDA}{\textsf{CDA}}
+\newcommand{\BPP}{\textsf{BPP}}
+\newcommand{\WBPP}{\textsf{WBPP}}
+\newcommand{\WFA}{\textsf{WFA}}
+\newcommand{\WTS}{\textsf{WTS}}
+\newcommand{\LTS}{\textsf{LTS}}
+\newcommand{\ATS}{\textsf{ATS}}
+
+\newcommand{\NC}{\textsf{NC}}
+\newcommand{\coRNC}{\textsf{coRNC}}
+\newcommand{\PTIME}{\textsf{PTIME}}
+\newcommand{\coRP}{\textsf{coRP}}
+\newcommand{\PSPACE}{\textsf{PSPACE}}
+\newcommand{\EXPTIME}{\textsf{EXPTIME}}
+\newcommand{\NEXPTIME}{\textsf{NEXPTIME}}
+\newcommand{\coNEXPTIME}{\textsf{coNEXPTIME}}
+\newcommand{\EXPSPACE}{\textsf{EXPSPACE}}
+\newcommand{\TWOEXPTIME}{{2-\EXPTIME}}
+\newcommand{\TWONEXPTIME}{{2-\NEXPTIME}}
+\newcommand{\coTWONEXPTIME}{{2-\coNEXPTIME}}
+\newcommand{\TWOEXPSPACE}{{2-\EXPSPACE}}
+
+\newcolumntype{A}{
+ >{$}r<{$}
+ @{\extracolsep{0pt}}
+ >{${}} l <{$}
+% @{\extracolsep{\fill}}
+} % A for "align"
+%% (1) "r" column in math mode:          >{$} r <{$}
+%% (2) no space:                         @{}
+%% (3) "l" column in math mode, with
+%%     an empty subformula at the start: >{${}} l <{$}
+
+\newcolumntype{M}{
+ >{$}c<{$}
+}
+
+% theorems
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem*{claim*}{Claim}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem*{proposition*}{Proposition}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem*{fact*}{Fact}
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\newtheorem{example}{Example}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\theoremstyle{problem}
+\newtheorem{problem}{Problem}
+
+\let\oldproof\proof
+\let\endoldproof\endproof
+
+% \makeatletter
+% \let\proof\@undefined
+% \let\endproof\@undefined 
+% \makeatother
+% \newenvironment{proof}{\oldproof}{\endoldproof}
+
+% \newenvironment{myproof}{\comment}{\endcomment}
+\newenvironment{myproof}{\proof}{\endproof}
+
+\newenvironment{claimproof}{\begin{proof}[Proof of the claim]}{\end{proof}}
+
+% \newenvironment{myclaimproof}{\comment}{\endcomment}
+\newenvironment{myclaimproof}{\begin{claimproof}}{\end{claimproof}}
+
+\crefname{equation}{}{}%{Eq.}{Eqns.}
+\crefname{definition}{Definition}{Definitions}
+\crefname{claim}{Claim}{Claims}
+\crefname{proposition}{Proposition}{Propositions}
+\crefname{lemma}{Lemma}{Lemmas}
+\crefname{corollary}{Corollary}{Corollaries}
+\crefname{theorem}{Theorem}{Theorems}
+\crefname{figure}{Fig.}{Figures}
+\crefname{fact}{Fact}{Facts}
+\crefname{example}{Example}{Examples}
+\crefname{remark}{Remark}{Remarks}
+\crefname{section}{§}{§§}
+\crefname{subsection}{§}{§§}
+\crefname{subsubsection}{§}{§§}
+\crefname{enumi}{}{}
+\crefname{problem}{Problem}{Problems}
+
+\crefname{table}{Table}{Tables}
+\crefname{figure}{Figure}{Figures}
+
+\crefname{appendix}{Appendix}{Appendices}
+
+% TODO
+\newcommand{\ilorenzo}[1]{\todo[inline, color=blue!30]{\textsf L: #1}}
+\newcommand{\lorenzo}[1]{\todo[color=blue!30]{\textsf L: #1}}

@@ -1,0 +1,969 @@
+%!TEX root main.tex
+\section{Infiltration-finite series and infiltration automata}
+\label{sec:infiltration}
+
+We have so far considered the Hadamard (\cref{sec:Hadamard}) and the shuffle products (\cref{sec:shuffle}),
+motivated by their applications to polyrec sequences~(\cref{sec:polyrec}),
+resp., \CDA~power series~(\cref{sec:CDA}).
+%
+Besides Hadamard and shuffle, in the literature one finds another product,
+called \emph{infiltration} (\cref{sec:infiltration:preliminaries}).
+%
+We observe that the infiltration product falls under the scope of our techniques.
+%
+In a manner analogous to the Hadamard and shuffle products,
+we can define \emph{infiltration-finite series} (\cref{sec:infiltration-finite series})
+and corresponding \emph{infiltration automata} (\cref{sec:infiltration automata}),
+which are novel models of computation not previously investigated.
+%
+The main result of this section (\cref{sec:infiltration:equality}) is that
+infiltration-finite series constitute an effective prevariety
+and thus the commutativity problem is decidable for this class
+(\cref{thm:infiltration finite - effective prevariety}).
+
+\subsection{Preliminaries}
+\label{sec:infiltration:preliminaries}
+\subsubsection{Infiltration algebras}
+
+An \emph{infiltration function} of an algebra $\tuple{A; 0, 1, {+}, {*}}$ (in short, \emph{infiltration})
+is a linear function $\delta : A \to A$ satisfying the following product rule
+%
+\begin{align}
+    \label{eq:infiltration rule}
+    \tag{infiltration rule}
+    \delta(\alpha * \beta) = \delta \alpha * \beta + \alpha * \delta \beta + \delta \alpha * \delta \beta,
+    \quad\text{for all } \alpha, \beta \in A.
+\end{align}
+%
+An \emph{infiltration algebra}
+$\tuple{A; 0, 1, {+}, {*}, (\delta_j)_{1\leq j\leq d}}$ is an algebra
+together with finitely many, not necessarily commuting infiltration functions $\delta_1, \dots, \delta_d : A \to A$.
+%
+The product rule \cref{eq:infiltration rule} bears resemblance to that for
+endomorphisms~\cref{eq:endomorphism} and for derivations~\cref{eq:Leibniz rule}.
+%
+In the next section we clarify this connection,
+which will be exploited to simplify later proofs.
+
+\subsubsection{$\sigma$-differential algebras}
+
+Let $\sigma : A \to A$ be an endomorphism.
+A \emph{$\sigma$-derivation} is a linear function $\delta : A \to A$ satisfying 
+%
+\begin{align}
+    \label{eq:sigma-derivation rule}
+    \tag{$\sigma$-derivation rule}
+    \delta(\alpha * \beta) = \delta \alpha * \beta + \sigma \alpha * \delta \beta,
+        \quad\text{for all } \alpha, \beta \in A.
+\end{align}
+%
+If we take the identity endomorphism $\sigma = \id$ then we recover the notion of derivation~\cref{eq:Leibniz rule}.
+%
+We observe that infiltrations arise as $\sigma$-derivations of a special kind.
+% which will shorten some proofs later.
+%
+\begin{lemma}
+    \label{lem:fundamental relationship}
+    Let $\sigma, \delta : A \to A$ be two functions satisfying the equation
+    %
+    \begin{align}
+        \label{eq:fundamental relationship}
+        \tag{$\sigma$-$\delta$}
+        \sigma \alpha = \alpha + \delta \alpha,
+            \text{ for every } \alpha \in A.
+    \end{align}
+    %
+    \begin{enumerate}
+
+        \item If $\sigma$ is an endomorphism,
+        then the unique $\delta$ satisfying~\cref{eq:fundamental relationship} is an infiltration.
+        \\
+        We call $\delta$ the infiltration \emph{induced} by $\sigma$.
+
+        \item If $\delta$ is an infiltration,
+        then the unique $\sigma$ satisfying~\cref{eq:fundamental relationship} is an endomorphism.
+        \\
+        We call $\sigma$ the endomorphism \emph{induced} by $\delta$.
+
+    \end{enumerate}
+    %
+    In both cases, $\delta$ is a $\sigma$-derivation.
+\end{lemma}
+%
+\noindent
+For instance, the identity endomorphism $\sigma = \id$
+induces the trivial infiltration $\delta \alpha = 0$ (and vice versa).
+%
+We will use the lemma in the next section to extract an infiltration from an endomorphism,
+and conversely to extract an endomorphism from an infiltration
+(\cf~the proof of~\cref{lem:infiltration - unique extension}).
+%
+\begin{proof}
+    Regarding point (1), let $\sigma$ be an endomorphism
+    and consider the unique map $\delta$ satisfying~\cref{eq:fundamental relationship}.
+    Linearity is clear.
+    Regarding products, we have
+    %
+    %\begin{align*}
+        $\delta (\alpha \cdot \beta)
+        = \sigma (\alpha \cdot \beta) - \alpha \cdot \beta
+        = \sigma \alpha \cdot \sigma \beta - \alpha \cdot \beta
+        = (\alpha + \delta \alpha) \cdot (\beta + \delta \beta) - \alpha \cdot \beta
+        = \alpha \cdot \delta \beta + \delta \alpha \cdot \beta + \delta \alpha \cdot \delta \beta$.
+        % = \delta \alpha \cdot \beta + \sigma \alpha \cdot \delta \beta.
+    % \end{align*}
+    %
+    Regarding point (2), let $\delta$ be an infiltration
+    and let $\sigma$ be the unique map satisfying~\cref{eq:fundamental relationship}.
+    %
+    % Clearly $\sigma$ has been chosen so that $\delta$ is a $\sigma$-derivation.
+    % It remains to check that $\sigma$ is an infiltration algebra endomorphism.
+    Linearity is clear.
+    Regarding products we have
+    %
+    % \begin{align*}
+        $\sigma (\alpha \cdot \beta)
+            = \alpha \cdot \beta + \delta (\alpha \cdot \beta)
+            = \alpha \cdot \beta + \delta \alpha \cdot \beta + \alpha \cdot \delta \beta + \delta \alpha \cdot \delta \beta
+            % = \alpha \cdot \beta + \delta \alpha \cdot \beta + \sigma \alpha \cdot \delta \beta
+            = \sigma \alpha \cdot \beta + \sigma \alpha \cdot \delta \beta
+            % = \sigma \alpha \cdot (\beta + \delta \beta)
+            = \sigma \alpha \cdot \sigma \beta$.
+    % \end{align*}
+\end{proof}
+
+\subsubsection{Infiltration algebras of polynomials}
+%
+As an example of an infiltration algebra,
+consider the algebra of polynomials $\tuple{\poly \Q X; 0, 1, {+}, {\cdot}}$.
+%
+An infiltration of this algebra is thus a linear function $\Delta : \poly \Q X \to \poly \Q X$
+satisfying the product rule
+%
+\begin{align*}
+    \Delta (\alpha \cdot \beta)
+        = \Delta \alpha \cdot \beta + \alpha \cdot \Delta \beta + \Delta \alpha \cdot \Delta \beta
+        = \Delta \alpha \cdot \beta + S \alpha \cdot \Delta \beta,
+\end{align*}
+%
+where we have defined $S \alpha := \alpha + \Delta \alpha$.
+%
+By~\cref{lem:fundamental relationship}, the function $\Delta$ is an infiltration iff $S$ is an endomorphism.
+Thus the polynomial algebra with an infiltration $\Delta$ carries the structure of an $S$-differential algebra.
+%
+%For instance, $\Delta (X_1 \cdot X_2) = \Delta X_1 \cdot X_2 + X_1 \cdot \Delta X_2 + \Delta X_1 \cdot \Delta X_2$.
+%
+We have seen that any function $\Delta : X \to \poly \Q X$
+extends uniquely to an endomorphism, resp., a derivation $\Delta : \poly \Q X \to \poly \Q X$.
+%
+We now state and prove the analogous property for infiltrations,
+which will be used later in the definition of infiltration automata.
+%
+\begin{lemma}
+    \label{lem:infiltration - unique extension}
+    Any function $\Delta : X \to \poly \Q X$
+    extends to a unique infiltration function $\Delta : \poly \Q X \to \poly \Q X$.
+\end{lemma}
+%
+\begin{proof}
+    Consider the map $S : X \to \poly \Q X$
+    \st~$S X_i := X_i + \Delta X_i$ for all $1 \leq i \leq k$
+    and extend it to an endomorphism $S : \poly \Q X \to \poly \Q X$. % as above (by evaluation of polynomials).
+    %
+    Now extend $\Delta$ to the whole polynomial algebra % $\Delta : \poly \Q X \to \poly \Q X$
+    by letting $\Delta \alpha := S \alpha - \alpha$ for all $\alpha \in \poly \Q X$.
+    %
+    Since $S$ is an endomorphism
+    and the pair $S, \Delta$ by definition satisfies~\cref{eq:fundamental relationship},
+    by~\cref{lem:fundamental relationship} we have that $\Delta$ is an infiltration function.
+    %
+    Uniqueness can be shown by induction on the total degree of polynomials.
+    %
+    We given another argument. %invert all steps in the definition of $\Delta$ above.
+    %
+    Let $\Delta_1, \Delta_2 : \poly \Q X \to \poly \Q X$ be two infiltration functions
+    extending $\Delta : X \to \poly \Q X$.
+    %
+    Then $S_1, S_2 : \poly \Q X \to \poly \Q X$ defined by
+    $S_i \alpha := \alpha + \Delta_i \alpha$ ($\alpha \in \poly \Q X$, $i \in \set{1, 2}$)
+    are endomorphisms by~\cref{lem:fundamental relationship}.
+    %
+    But $S_1, S_2$ agree on $X$, and thus $S_1 = S_2$,
+    implying $\alpha + \Delta_1 \alpha = \alpha + \Delta_2 \alpha$ ($\forall \alpha \in \poly \Q X$) and thus $\Delta_1 = \Delta_2$.
+\end{proof}
+%
+% If $\Delta_{a \in \Sigma}$ is a family of infiltrations
+% %
+% \begin
+% \begin{remark}[Differential algebra of polynomials]
+%     For every $a \in \Sigma$,
+%     consider the mapping $S_a : \poly \Q X \to \poly \Q X$ \st
+%     %
+%     \begin{align}
+        
+%         \text{ for all } \alpha \in \poly \Q X.
+%     \end{align}
+%     %
+%     This allows us to write the infiltration product rule as:
+%     %
+
+%     %
+%     % In short, $S_a := 1 + \Delta_a$.
+%     Since $\Delta_a$ is an infiltration function,
+%     by~\cref{lem:fundamental relationship} we have that $S_a$ is an endomorphism of the polynomial ring
+%     % and thus $\Delta_a$ is an $S_a$-derivation of the polynomial ring for every $a \in \Sigma$,
+%     and thus $\tuple{\poly \Q X; {+}, {\cdot}, \tuple{S_a}_{a \in \Sigma}, \tuple{\Delta_a}_{a \in \Sigma}}$ is an $S$-differential algebra.
+% \end{remark}
+
+\subsubsection{Infiltration algebras of series}
+
+We show that series can be endowed with the structure of an infiltration algebra.
+While for polynomials the notion of product is fixed
+and we have used it to define infiltration functions,
+for series we proceed the other way around:
+The transition structure given by left derivatives is fixed
+and we define the infiltration product
+by demanding that left derivatives be infiltration functions \wrt~this product.
+%
+Formally, the \emph{infiltration product} of two series $f, g \in \series \Q \Sigma$,
+denoted by $f \infiltration g$,
+is defined coinductively as follows:
+%
+\begin{align}
+    \tag{${\infiltration}$-$\e$}
+    \label{eq:infiltration:base}
+    \coefficient \e {(f \infiltration g)}
+        &= f_\e \cdot g_\e, \\
+    \tag{${\infiltration}$-$\deriveleft a$}
+    \label{eq:infiltration:step}
+        \deriveleft a (f \infiltration g)
+        &= \deriveleft a f \infiltration g
+            + f \infiltration \deriveleft a g
+            + \deriveleft a f \infiltration \deriveleft a g,
+        \ \forall a \in \Sigma.
+\end{align}
+%
+To see why this uniquely defines a series $f \infiltration g$,
+we can reason by induction on the length of words.
+%
+The first rule gives us the value for the constant term. % $\coefficient \e (f \infiltration g)$.
+For nonempty words, we have
+%
+\begin{align*}
+    &\coefficient {a \cdot w} (f \infiltration g)
+    = \coefficient w (\deriveleft a (f \infiltration g))
+%    = \coefficient w (\deriveleft a f \infiltration g
+%        + f \infiltration \deriveleft a g
+%        + \deriveleft a f \infiltration \deriveleft a g)
+    = \coefficient w (\deriveleft a f \infiltration g)
+    + \coefficient w (f \infiltration \deriveleft a g)
+    + \coefficient w (\deriveleft a f \infiltration \deriveleft a g),
+\end{align*}
+%
+where the three coefficients for word $w \in \Sigma^*$ are obtained by the inductive assumption.
+%
+% For instance, a short calculation shows that $ab \infiltration a = 2aab + aba + ab$.
+%
+Infiltration product is an associative, commutative, and bilinear operation on series,
+with identity the series $1 \cdot \e$ (the same identity as for the shuffle product).
+%
+We call the resulting structure $\series \Q \Sigma_{\infiltration} := \tuple{\series \Q \Sigma; \zero, 1 \cdot \e, {+}, {\infiltration}}$
+the \emph{infiltration algebra} of series.
+%
+%The rule~\cref{eq:infiltration:step} makes $\deriveleft a$ an infiltration of this algebra.
+%
+Infiltration has been introduced by Chen, Fox, and Lyndon~\cite{ChenFoxLyndon:AM:1958}
+in the context of the \emph{free differential calculus} of Fox~\cite{Fox:AM:1953}.
+%
+More recently, it has been considered in a coalgebraic setting~\cite[Sec.~8]{BasoldHansenPinRutten:MSCS:2017}.
+%
+From a concurrency perspective, it models the \emph{synchronising interleaving}
+where processes are allowed (but not forced) to jointly perform the input actions
+(thanks to the term $\deriveleft a f \infiltration \deriveleft a g$ in~\cref{eq:infiltration:step}).
+%
+For instance, in the interleaving semantics we have $ab \shuffle a = 2aab + aba$,
+but in the synchronising interleaving we have $ab \infiltration a = 2aab + aba + ab$.
+
+\begin{remark}
+    We have chosen a coinductive approach to the definition of infiltration product
+    since it brings to the foreground the similarity with Hadamard and shuffle products.
+    %
+    Alternatively, one can define the infiltration product on finite words by induction on their length,
+    and then lift it to series by linearity and continuity~\cite[page 126]{Lothaire:CUP:1997}.
+\end{remark}
+
+\begin{remark}[Differential algebra of series]
+    %
+    For every input symbol $a \in \Sigma$,
+    consider the linear map $\sigma_a : \series \Q \Sigma \to \series \Q \Sigma$ defined by
+    %
+    \begin{align}
+        \tag{$\sigma_a$}
+        \sigma_a f := f + \deriveleft a f,
+        \text{ for every } f \in \series \Q \Sigma. %, a \in \Sigma.
+    \end{align}
+    %
+    Sometimes we write $\sigma^L_a$ to stress that the definition is \wrt~the left derivative.
+    %
+    Since $\deriveleft a$ is an infiltration function,
+    thanks to~\cref{lem:fundamental relationship}
+    we have that $\sigma_a$ is an infiltration algebra endomorphism,
+    and thus $\deriveleft a$ is a $\sigma_a$-derivation.
+    %
+    Using the definition of $\sigma_a$,
+    the rule~\cref{eq:infiltration:step} can be rewritten more succinctly as follows:
+    %
+    \begin{align}
+        \tag{${\infiltration}$-$\deriveleft a$'}
+        \label{eq:infiltration:step'}
+            \deriveleft a (f \infiltration g)
+            &= \deriveleft a f \infiltration g
+                + \sigma_a f \infiltration \deriveleft a g
+            \ \forall a \in \Sigma.
+    \end{align}
+    %
+    This should be compared to the fact that $\deriveleft a$ is a derivation
+    (\ie, for the identity endomorphism) of the shuffle algebra.
+    %
+    % This helps explaining why the infiltration product behaves more similarly to
+    % the shuffle product than to the Hadamard one.
+\end{remark}
+
+In the next lemma we observe that also right derivatives are infiltration functions.
+This shows that infiltration product can be defined equivalently from the left and from the right.
+%
+This is a symmetry shared by the Hadamard and shuffle products,
+however there is no reason why it should hold for an arbitrary product.
+% (for instance, it fails for the concatenation product).
+%
+We will be using this property in the proof of closure under right derivatives for infiltration-finite series
+(\cref{lem:infiltration closure}).
+%
+In the following, define $\sigma^R_a f := f + \deriveright a f$, for all $f \in \series \Q \Sigma$.
+%
+\begin{lemma}
+    \label{lem:derive right infiltration}
+    The right derivative operator $\deriveright a$ (with $a \in \Sigma$)
+    is an infiltration function of the infiltration algebra:
+    it is linear and it satisfies
+    %
+    \begin{align}
+        \label{eq:derive right infiltration}
+        \tag{${\infiltration}$-$\deriveright a$}
+        \deriveright a (f \infiltration g)
+        &= \deriveright a f \infiltration g
+            + f \infiltration \deriveright a g
+            + \deriveright a f \infiltration \deriveright a g
+        = \deriveright a f \infiltration g + \sigma^R_a \infiltration \deriveright a g,
+        \quad \forall f, g \in \series \Q \Sigma. % a \in \Sigma.
+    \end{align}
+\end{lemma}
+%
+\begin{proof}
+    We proceed by coinduction.
+    The constant terms of the two sides coincide:
+    %
+    \begin{align*}
+        \coefficient \e (\deriveright a (f \infiltration g))
+            % &= \coefficient a (f \infiltration g)
+            &= \coefficient \e (\deriveleft a (f \infiltration g))
+            = \coefficient \e (\deriveleft a f \infiltration g + f \infiltration \deriveleft a g + \deriveleft a f \infiltration \deriveleft a g)
+            = f_a \cdot g_\e + f_\e \cdot g_a + f_a \cdot g_a = \\
+            &= \coefficient \e (\deriveright a f \infiltration g + f \infiltration \deriveright a g + \deriveright a f \infiltration \deriveright a g).
+    \end{align*}
+    %
+    Now consider an input symbol $b \in \Sigma$.
+    %
+    Thanks to~\cref{lem:derive left right commutativity},
+    we obtain the following commutation rules:
+    %
+    \begin{align}
+        \label{eq:commutation rules}
+        \deriveright a  \deriveleft b f = \deriveleft b \deriveright a f,
+            \qquad
+        \sigma^R_a \delta^L_b f = \delta^L_b \sigma^R_a f,
+            \qquad
+        \delta^R_a \sigma^L_b f = \sigma^L_b \delta^R_a f,
+            \quad\text{and}\quad
+        \sigma^R_a \sigma^L_b f = \sigma^L_b \sigma^R_a f,
+        \quad \forall f \in \series \Q \Sigma.
+    \end{align}
+    %
+    % We will write $f^b$ instead of $\deriveleft b f$ for short.
+    Thanks to the rules above, we have
+    %
+    \begin{align*}
+        \deriveleft b \deriveright a (f \infiltration g)
+            &= \deriveright a \deriveleft b (f \infiltration g) =
+                &&\text{by~\cref{eq:commutation rules}} \\
+            &= \deriveright a (\deriveleft b f \infiltration g + \sigma^L_b f \infiltration \deriveleft b g) =
+                &&\text{(def.~$\infiltration$)} \\
+            &= \deriveright a (\deriveleft b f \infiltration g) + \deriveright a (\sigma^L_b f \infiltration \deriveleft b g) =
+                &&\text{(linearity of $\deriveright a$)} \\
+            &=  \deriveright a \deriveleft b f \infiltration g + \sigma^R_a \deriveleft b f \infiltration \deriveright a g
+                + \deriveright a \sigma^L_b f \infiltration \deriveleft b g + \sigma^R_a \sigma^L_b f \infiltration \deriveright a \deriveleft b g =
+                &&\text{(coinduction)} \\
+            &=  \deriveleft b \deriveright a f \infiltration g + \deriveleft b \sigma^R_a f \infiltration \deriveright a g
+                + \sigma^L_b \deriveright a f \infiltration \deriveleft b g + \sigma^L_b \sigma^R_a  f \infiltration \deriveleft b \deriveright a g =
+                &&\text{by~\cref{eq:commutation rules}} \\
+            &= \deriveleft b (\deriveright a f \infiltration g)
+                + \deriveleft b (\sigma^R_a f \infiltration \deriveright a g)
+                &&\text{(def.~$\infiltration$)} \\
+            &= \deriveleft b (\deriveright a f \infiltration g + \sigma^R_a f \infiltration \deriveright a g).
+                &&\text{(linearity of $\deriveleft b$)} \qedhere
+    \end{align*}
+    %
+    % The second equation follows from \cref{lem:fundamental relationship},
+    % since we have shown that $\deriveright a$ is an infiltration function
+    % and thus $\sigma^R_a$ is its induced endomorphism.
+\end{proof}
+
+\subsection{Infiltration-finite series}
+\label{sec:infiltration-finite series}
+
+We have seen that the Hadamard and shuffle products induce corresponding classes of
+Hadamard-finite~(\cref{sec:Hadamard-finite series}), resp.
+shuffle-finite series~(\cref{sec:shuffle-finite series}),
+together with natural closure properties.
+%
+The infiltration product admits an analogous development.
+%
+For series $f_1, \dots, f_k \in \series \Q \Sigma$,
+we denote by $\poly \Q {f_1, \dots, f_k}_{\infiltration}$
+the infiltration subalgebra finitely generated by the $f_i$'s.
+%
+% This algebra is usually not free,
+% since there may be nontrivial relations between the generators.
+%
+An infiltration algebra is \emph{differential}
+if it is closed under $\deriveleft a$, for all $a \in \Sigma$.
+
+\begin{definition}
+    A series is \emph{infiltration finite} if it belongs to a
+    finitely generated differential infiltration algebra of series.
+\end{definition}
+%
+The following lemma unpacks the definition above
+and provides our working definition for infiltration finite series.
+%
+Its statement and proof are similar to~\cref{lem:Hadamard finite - working definition}:
+We present the former but we omit the latter.
+%
+\begin{lemma}
+    \label{lem:infiltration finite - working definition}
+    A series $f \in \series \Q \Sigma$ is infiltration finite
+    iff there are generators $f_1, \dots, f_k \in \series \Q \Sigma$ \st:
+    \begin{enumerate}
+        \item $f \in \poly \Q {f_1, \dots, f_k}_{\infiltration}$ and
+        \item $\deriveleft a f_i \in \poly \Q {f_1, \dots, f_k}_{\infiltration}$
+        for every $a \in \Sigma$ and $1 \leq i \leq k$.
+    \end{enumerate}
+    %
+    Moreover, we can assume \wlg~that $f = f_1$.
+\end{lemma}
+
+Infiltration-finite series have several pleasant closure properties.
+
+\begin{restatable}{lemma}{lemInfiltrationClosure}
+    \label{lem:infiltration closure}
+    The class of infiltration-finite series
+    is an effective differential infiltration algebra:
+    It contains $\zero$, $1 \cdot \e$, and it is effectively closed under
+    scalar product $c \cdot f$,
+    sum $f + g$,
+    infiltration product $f \infiltration g$,
+    and left derivative $\deriveleft a f$.
+    %
+    Moreover,
+    %
+    \begin{itemize}
+        \item if $f$ is infiltration finite,
+        then $\deriveright a f$ is effectively infiltration finite, and
+        %
+        \item If $g \in \series \Q \Sigma$ is an anti-derivative
+        of a tuple of infiltration-finite series $f = \tuple{f_a}_{a \in \Sigma} \in \series \Q \Sigma^\Sigma$,
+        then $g$ is effectively infiltration finite.
+    \end{itemize}
+\end{restatable}
+%
+\begin{proof}
+    All closure properties are based on simple manipulations of the generators.
+    They are based on~\cref{lem:infiltration finite - working definition}
+    and follow the same pattern as for Hadamard-finite and shuffle-finite series
+    (\cf~\cref{lem:Hadamard closure properties}).
+    %
+    As an illustration, we show closure under right derivatives.
+    %
+    Let $f$ be an infiltration-finite series and fix an input symbol $a \in \Sigma$.
+    %
+    By~\cref{lem:infiltration finite - working definition},
+    there are generators $f_1, \dots, f_k$ with $f = f_1$ generating the $\deriveleft {}$-closed infiltration algebra
+    %
+    % \begin{align*}
+        $A := \poly \Q {f_1, \dots, f_k}_{\infiltration}$.
+    % \end{align*}
+    %
+    We adjoin new generators $\deriveright a f_1, \dots, \deriveright a f_k$,
+    obtaining the larger infiltration algebra
+    %
+    % \begin{align*}
+        $B := \poly \Q {f_1, \dots, f_k, \deriveright a f_1, \dots, \deriveright a f_k}_{\infiltration}$.
+    % \end{align*}
+    %
+    By construction, $\deriveright a f = \deriveright a f_1$ is in $B$.
+    It remains to show that $B$ is $\deriveleft {}$-closed.
+    %
+    Since $A$ is $\deriveleft {}$-closed, it suffices to show this for the new generators.
+    %
+    So consider $\deriveleft b \deriveright a f_i$
+    for arbitrary $a, b \in \Sigma$ and $1 \leq i \leq k$.
+    %
+    By~\cref{lem:derive left right commutativity}, left and right derivatives commute,
+    so we have $\deriveleft b \deriveright a f_i = \deriveright a \deriveleft b f_i$.
+    %
+    Since $A$ is $\deriveleft {}$-closed, $\deriveleft b f_i$ is in $A$,
+    and thus we can write $\deriveleft b f_i = p_i^b(f_1, \dots, f_k)$
+    for some polynomial $p_i^a$ (where product is interpreted as infiltration product).
+    %
+    Thanks to linearity of right derivative and~\cref{lem:derive right infiltration},
+    a proof by structural induction on polynomials
+    shows that $\deriveright a (p_i^a(f_1, \dots, f_k))$ can be written as a polynomial expression
+    $q_i^{a, b}(f_1, \dots, f_k, \deriveright a f_1, \dots, \deriveright a f_k)$.
+    %
+    We thus have
+    %
+    $\deriveleft b \deriveright a f_i
+            = \deriveright a \deriveleft b f_i
+            = q_i^{a, b}(f_1, \dots, f_k, \deriveright a f_1, \dots, \deriveright a f_k)
+            \in B$,
+    as required.
+\end{proof}
+
+In this section we have defined the class of infiltration-finite series in a semantic fashion,
+based on which we have shown effective closure properties~(\cref{lem:infiltration closure}).
+%
+In order to show that infiltration-finite series constitute an effective prevariety,
+it remains to show that the zeroness problem is decidable for them.
+%
+To this end, we introduce in the next section a suitable automaton model capturing the same class.
+
+\subsection{Infiltration automata}
+\label{sec:infiltration automata}
+
+The syntax and semantics of infiltration automata is largely parallel to that of Hadamard and shuffle automata.
+An \emph{infiltration automaton} is a tuple
+$\AA = \tuple{\Sigma, X, F, \Delta}$
+where $\Sigma$ is a finite \emph{input alphabet},
+$X = \set{X_1,  \dots X_k}$ is a finite set of \emph{nonterminal symbols},
+$F : X \to \Q$ is the \emph{output function},
+and $\Delta : \Sigma \to X \to \poly \Q X$ is the \emph{transition function}.
+%
+The only difference is how to extend the transition function $\Delta_a : X \to \poly \Q X$
+from variables $X$ to configurations $\poly \Q X$.
+%
+Here, we extend $\Delta_a$ to a unique infiltration $\Delta_a : \poly \Q X \to \poly \Q X$,
+thanks to~\cref{lem:infiltration - unique extension}.
+%
+In a way entirely parallel to Hadamard and shuffle automata,
+this defines a semantic function $\Asem \AA \_ : \poly \Q X \to \series \Q \Sigma$.
+%
+When the automaton $\AA$ is fixed by the context, we also just write $\sem \_$.
+%
+The main property of the semantics is that it is a homomorphism,
+in complete analogy for the corresponding properties for Hadamard and shuffle automata
+(\cref{lem:Hadamard automata - properties of the semantics},
+resp., \cref{lem:shuffle automata - properties of the semantics}).
+%
+\begin{lemma}[Properties of the semantics]
+    \label{lem:infiltration automata - properties of the semantics}
+    The semantic function $\Asem \AA \_$ is a homomorphism
+    from the $S$-differential algebra of polynomials
+    to the $\sigma$-differential infiltration algebra of series.
+    %
+    In other words, for every configurations $\alpha, \beta \in \poly \Q X$,
+    %
+    \begin{align}
+        \label{eq:infiltration:sem:scalar-product}
+        \Asem \AA {c \cdot \alpha}
+            &= c \cdot \Asem \AA \alpha,
+            &&\forall c \in \Q, \\
+        \label{eq:infiltration:sem:sum}
+        \Asem \AA {\alpha + \beta}
+            &= \Asem \AA \alpha + \Asem \AA \beta, \\
+        \label{eq:infiltration:sem:product}
+        \Asem \AA {\alpha \cdot \beta}
+            &= \Asem \AA \alpha \infiltration \Asem \AA \beta, \\
+        \label{eq:infiltration:sem:endomorphism}
+        \Asem \AA {S_a \alpha}
+            &= \sigma_a (\Asem \AA \alpha),
+            &&\forall a \in \Sigma \\
+        \label{eq:infiltration:sem:derivation}
+        \Asem \AA {\Delta_a \alpha}
+            &= \deriveleft a (\Asem \AA \alpha),
+            &&\forall a \in \Sigma.
+        \end{align}
+\end{lemma}
+%
+\begin{proof}
+    Property~\cref{eq:infiltration:sem:derivation}
+    holds by definition of the semantics.
+    %
+    Properties~\cref{eq:infiltration:sem:scalar-product} and~\cref{eq:infiltration:sem:sum}
+    follow from linearity of $\deriveleft a$ and $\Delta_a$.
+    %
+    From these, \cref{eq:infiltration:sem:endomorphism} follows easily:
+    %
+    $
+        \sem {S_a \alpha}
+        = \sem {\alpha + \Delta_a \alpha}
+        = \sem \alpha + \sem {\Delta_a \alpha}
+        = \sem \alpha + \deriveleft a \sem \alpha
+        = \sigma_a \sem \alpha$.
+    %
+    For the last property~\cref{eq:infiltration:sem:product}, we proceed coinductively.
+    %
+    Clearly, the constant term of $\sem {\alpha \cdot \beta}$ and $\sem \alpha \infiltration \sem \beta$
+    is the same, namely $F \alpha \cdot F \beta$.
+    %
+    For the coinductive step, we show that the left derivatives
+    of $\sem {\alpha \cdot \beta}$ and $\sem \alpha \infiltration \sem \beta$ coincide:
+    %
+    % For readability, we write $\alpha^a$ for $\Delta_a \alpha$ when $\alpha \in \poly \Q X$
+    % and $f^a$ for $\deriveleft a f$ when $f \in \series \Q \Sigma$.
+    %
+    \begin{align*}
+        \deriveleft a \sem {\alpha \cdot \beta}
+            &= \sem {\Delta_a (\alpha \cdot \beta)}
+            = \sem {\Delta_a \alpha \cdot \beta + S_a \alpha \cdot \Delta_a \beta}
+            = \sem {\Delta_a \alpha \cdot \beta} + \sem {S_a \alpha \cdot \Delta_a \beta}
+            \stackrel ! = \sem {\Delta_a \alpha} \infiltration \sem \beta
+                + \sem {S_a \alpha} \infiltration \sem {\Delta_a \beta} = \\
+            &= (\deriveleft a {\sem \alpha}) \infiltration \sem \beta
+                + (\sigma_a \sem \alpha )\infiltration \deriveleft a \sem \beta
+            = \deriveleft a (\sem \alpha \infiltration \sem \beta). \qedhere
+    \end{align*}
+\end{proof}
+
+The following characterisation connects infiltration automata and infiltration-finite series.
+Thanks to it, we can use algorithmic results on infiltration automata for infiltration-finite series.
+%
+We omit the proof, which is analogous to that of~\cref{lem:Hadamard automata and series},
+relying on~\cref{lem:infiltration automata - properties of the semantics,lem:infiltration finite - working definition}.
+%
+\begin{restatable}{lemma}{lemInfiltrationAutomataInfiltrationFinite}
+    \label{lem:infiltration automata = infiltration finite}
+    A series is recognised by an infiltration automaton
+    if, and only if, it is infiltration finite.
+\end{restatable}
+
+\subsection{Equality problem}
+\label{sec:infiltration:equality}
+
+We show that the equality problem for infiltration-finite series is decidable.
+%
+% When $\Sigma = \set a$ (i.e., for univariate sequences, \aka~streams, $\N \to \Q$)
+% decidability follows from \cite[Theorem 4.2]{BorealeCollodiGorla:ACMTCL:2024}.
+% %
+% We show that this can be generalised to arbitrary finite alphabets $\Sigma$.
+%
+To this end, we leverage a classic technique based on chains of polynomial ideals and Hilbert's finite basis theorem.
+%
+This technique has been used by Novikov and Yakovenko to derive decidability results
+on continuous time and discrete time dynamical systems~\cite{NovikovYakovenko:1999}.
+%
+In the terminology of this paper,
+their results yield decidability of equality for univariate ($\Sigma = \set a$) Hadamard-finite and shuffle-finite series.
+%
+It has provided the basis of several subsequent decidability results,
+such as in the work of Benedikt \etal~for multivariate ($\card \Sigma \geq 1$) Hadamard-finite series
+(\aka~polynomial automata \cite{BenediktDuffSharadWorrell:PolyAut:LICS:2017}),
+in our work on multivariate shuffle-finite series~\cite{Clemente:CONCUR:2024},
+and in the work of Boreale \etal~for univariate infiltration-finite series~\cite{BorealeGorla:CONCUR:2021,BorealeCollodiGorla:ACMTCL:2024}.
+
+Fix an infiltration automaton $\AA = \tuple{\Sigma, X, F, \Delta}$
+recognising an infiltration-finite series $f = \Asem \AA {X_1} \in \series \Q \Sigma$.
+%
+Since equality reduces to zeroness, we show how to decide $\Asem \AA {X_1} = \zero$.
+%
+For a set of configurations $P \subseteq \poly \Q X$,
+let the \emph{polynomial ideal generated by $P$}, written $\ideal P$,
+be the set of all polynomials of the form $\beta_1 \cdot \alpha_1 + \cdots + \beta_n \cdot \alpha_n$,
+with $\alpha_1, \dots, \alpha_n \in P$ configurations in $P$
+and $\beta_1, \dots, \beta_n \in \poly \Q X$ arbitrary configurations.
+%
+(We refer to \cite{CoxLittleOShea:Ideals:2015} for more details on algebraic geometry.)
+%
+We will be looking at the ideal $\ideal C$ generated by all reachable configurations
+$C := \setof{\Delta_w X_1 \in \poly \Q X}{w \in \Sigma^*}$.
+%
+The intuition is that, while the set of reachable configurations $C$ is complicated
+(formally, its membership problem is undecidable),
+the ideal it generates $\ideal C$ is simple:
+It is finitely generated (as an ideal)
+and we can compute a finite set of generators for it.
+%
+In other words, $\ideal C$ is effectively finitely generated.
+%
+Moreover, the ideal abstraction is sound for the zeroness problem:
+when the generators vanish, so do all polynomials in the ideal they generate,
+and so no information is lost.
+
+For a length $n \in \N$,
+consider the polynomial ideal $I_n$
+generated by all configurations reachable from $X_1$
+by reading words of length $\leq n$:
+%
+\begin{align*}
+    I_n := \idealof {\Delta_w X_1} {w \in \Sigma^{\leq n}}.
+\end{align*}
+%
+The following lemma describes the relevant properties of these ideals.
+%
+\begin{lemma}
+    \label{lem:infiltration ideals}
+    \begin{enumerate}
+        \item $I_n \subseteq I_{n+1}$.
+        \item $\Delta_a I_n \subseteq I_{n+1}$.
+        \item $I_{n+1} = I_n + \idealof {\Delta_a I_n} {a \in \Sigma}$.
+        \item $I_n = I_{n+1}$ implies $I_n = I_{n+1} = I_{n+2} = \cdots$.
+    \end{enumerate}
+\end{lemma}
+\begin{proof}
+    The first point holds since the operation of constructing the ideal generated by a set
+    is monotonic for inclusion of sets.
+    %
+    To prove the second point we use the fact that $\Delta_a$ is an infiltration
+    (this is the only property relying directly on this).
+    %
+    Let $\alpha \in \Delta_a I_n$. Then $\alpha$ is of the form
+    %
+    \begin{align*}
+        \alpha
+        &= \Delta_a \sum_{i = 1}^m \beta_i \cdot \Delta_{w_i} X_1
+        = \sum_{i = 1}^m \Delta_a (\beta_i \cdot \Delta_{w_i} X_1)
+        = \sum_{i = 1}^m (\Delta_a \beta_i \cdot \underbrace{\Delta_{w_i} X_1}_{\in I_n}
+            + S_a \beta_i \cdot \underbrace{\Delta_a \Delta_{w_i} X_1}_{\in I_{n+1}}),
+    \end{align*}
+    %
+    which is clearly in $I_{n+1}$.
+    %
+    We now consider the third point.
+    The ``$\supseteq$'' inclusion holds by the first two points
+    and the fact that $I_{n+1}$ is an ideal.
+    %
+    For the other inclusion, let $\alpha \in I_{n+1}$.
+    We can write $\alpha$ separating words of length exactly $n+1$ from the rest, and we have
+    %
+    \begin{align*}
+        \alpha
+            &= \underbrace \beta_{\in I_n}
+            + \sum_{w \in \Sigma^{n+1}} \beta_w \cdot \Delta_w X_1
+            = \beta + \sum_{a \in \Sigma} \sum_{w \in \Sigma^n} \beta_{w \cdot a} \cdot \Delta_{w \cdot a} X_1
+            = \beta + \sum_{a \in \Sigma} \sum_{w \in \Sigma^n} \beta_{w \cdot a} \cdot \Delta_a \underbrace{\Delta_w X_1}_{\in I_n},
+    \end{align*}
+    %
+    where the latter quantity is clearly in the ideal generated by $\Delta_a I_n$.
+    %
+    The last point follows from the previous one
+    since we have shown that $I_{n+1}$ is a function of $I_n$.
+\end{proof}
+
+Now consider the chain of ideals
+%
+\begin{align}
+    \label{eq:infiltration ideal chain}
+    I_0 \subseteq I_1 \subseteq \cdots \subseteq \poly \Q X.
+\end{align}
+%
+By \emph{Hilbert's finite basis theorem}~\cite[Theorem 4, §5, Ch. 2]{CoxLittleOShea:Ideals:2015},
+there is $N \in \N$ \st~the chain stabilises $I_N = I_{N+1} = \cdots$.
+%
+Thanks to the last point of~\cref{lem:infiltration ideals}, such an $N$ is computable:
+Indeed, $N$ can be taken to be the smallest $n \in \N$ \st~$I_n = I_{n+1}$,
+and ideal equality can be decided by checking that the generators of $I_{n+1}$ are all in $I_n$.
+The latter test is an instance of the \emph{ideal membership problem},
+which is decidable (in exponential space)~\cite{Mayr:STACS:1989}.
+%
+We call such minimal $N$ the \emph{stabilisation index} of the ideal chain.
+%
+We remark that it is crucial that such an $N$ not only exists
+(as follows already from Hilbert's theorem, whose proof is notoriously non-constructive),
+but it can be computed.
+%
+The following property provides a decidable criterion for zeroness.
+%
+\begin{lemma}
+    \label{lem:infiltration zeroness characterisation}
+    Let $N \in \N$ be the stabilisation index
+    of the ideal chain~\cref{eq:infiltration ideal chain}.
+    %
+    We then have
+    \begin{align*}
+        \Asem \AA {X_1} = \zero
+        \qquad \text{if, and only if,} \qquad
+        \coefficient w (\Asem \AA {X_1}) = 0
+        \text{ for all } w \in \Sigma^{\leq N}.
+    \end{align*}
+\end{lemma}
+\begin{proof}
+    The ``only if'' direction is trivial.
+    %
+    For the other direction, assume that the semantics is zero for words of length $\leq N$.
+    %
+    Thanks to the properties of the semantics (\cref{lem:infiltration automata - properties of the semantics}),
+    for every word $w \in \Sigma^*$ we can write
+    %
+    \begin{align*}
+        \deriveleft w \sem {X_1}
+        &= \sem {\Delta_w X_1}
+        = \sem {\sum_{u \in \Sigma^{\leq N}} \beta_u \cdot \Delta_u X_1}
+        = \sum_{u \in \Sigma^{\leq N}} \sem {\beta_u} \infiltration \sem {\Delta_u X_1},
+    \end{align*}
+    %
+    where we have used the fact that $\Delta_w X_1$ is in $I_N$.
+    %
+    By taking constant terms on both sides, we have
+    \begin{align*}
+        \coefficient w \sem {X_1}
+        &= \coefficient \e (\deriveleft w \sem {X_1})
+        = \sum_{u \in \Sigma^{\leq N}} \coefficient \e \sem {\beta_u} \cdot \coefficient \e \sem {\Delta_u X_1}
+        = \sum_{u \in \Sigma^{\leq N}} \coefficient \e \sem {\beta_u} \cdot \coefficient \e (\deriveleft u \sem {X_1})
+        = \sum_{u \in \Sigma^{\leq N}} \coefficient \e \sem {\beta_u} \cdot \coefficient u \sem {X_1}.
+    \end{align*}
+    %
+    But $u$ has length $\leq N$, and thus by the assumption $\coefficient u \sem {X_1} = 0$,
+    implying $\coefficient w \sem {X_1} = 0$, as required.
+\end{proof}
+%
+\begin{restatable}{theorem}{thmEqInfiltrationDec}
+    \label{thm:infiltration finite - decidable equality}
+    The equality problem for infiltration-finite series is decidable.
+\end{restatable}
+\begin{proof}%[Proof of~\cref{thm:infiltration finite - decidable equality}]
+    By using the effective closure properties of infiltration-finite series,
+    we reduce equality $f = g$ to zeroness $f - g = \zero$.
+    %
+    So let $f = \Asem \AA {X_1}$ be an infiltration-finite series,
+    recognised by an infiltration automaton $\AA$.
+    %
+    Compute the stabilisation index $N \in \N$ of the ideal chain~\cref{eq:infiltration ideal chain}.
+    Thanks to~\cref{lem:infiltration zeroness characterisation},
+    we can decide $f = \zero$
+    by enumerating all words $w$ of length $\leq N$
+    and checking $\coefficient w f = 0$.
+    %
+    The latter test is performed by applying the semantics of the infiltration automaton.
+\end{proof}
+
+\begin{remark}[Effective algebraic variety of initial conditions]
+    \label{rem:effective algebraic varieties}
+    The zeroness algorithm above solves a more general problem.
+    %
+    Not only it decides whether a given initial condition gives rise to the zero semantics,
+    but it also shows that the set of all such initial conditions
+    forms an \emph{effective algebraic variety} (in the sense of algebraic geometry)
+    and computes a finite representation for it in the form of a finite set of polynomials, as we now explain.
+    %
+    In fact, the same remark applies to equivalence and commutativity,
+    and to Hadamard and shuffle automata.
+
+    Given any set of polynomials $P \subseteq \poly \Q X$,
+    let their \emph{zero set} $V(P) \subseteq \C^k$ be the set of their common zeroes,
+    %
+    \begin{align*}
+        V(P) := \setof{x \in \C^k}{\forall p \in P : p(x) = 0}.
+    \end{align*}
+    %
+    Sets of the form $V(P) \subseteq \C^k$ for some $P \subseteq \poly \Q X$
+    are called \emph{algebraic varieties}~\cite[§2, Ch.~1]{CoxLittleOShea:Ideals:2015}
+    and play a prominent role in algebraic geometry.
+    %
+    Fix a Hadamard, shuffle, or infiltration automaton $\AA_F = \tuple{\Sigma, X, F, \Delta}$,
+    where we have made explicit the dependency of the automaton on the initial condition $F$.
+    %
+    In the algebraic framework,
+    it is more natural to consider a slightly more general class of initial conditions $F : X \to \C$,
+    mapping nonterminals to complex numbers.
+    %
+    For every initial configuration $\alpha \in \poly \Q X$,
+    let $\FF_\alpha$ be the set of initial conditions giving rise to the zero semantics from $\alpha$,
+    %
+    \begin{align*}
+        % \FF := \setof{F : X \to \C}{\Asem {\AA_F} {\alpha} \text{ is commutative}}.
+        \FF_\alpha := \setof{F : X \to \C}{\Asem {\AA_F} \alpha = \zero}.
+    \end{align*}
+    %
+    Thus, by definition $\FF_\alpha$ is the set of common zeroes $\FF_\alpha = V(P)$ of the (possibly infinite) set of polynomials
+    %
+    \begin{align*}
+        %\label{eq:commutativity polynomials}
+        %P := \setof {\Delta_u \alpha - \Delta_v \alpha \in \poly \Q X}{u, v \in \Sigma^*, u \sim v},
+        P := \setof {\Delta_w \alpha \in \poly \Q X}{w \in \Sigma^*},
+    \end{align*}
+    %
+    %where recall that $u \sim v$ means that $u, v$ are permutation equivalent.
+    %
+    and thus $\FF_\alpha$ is an algebraic variety.
+    %
+    The zeroness problem amounts to decide whether a given initial condition $F$ is in this algebraic variety,
+    which is just an instance of the membership problem.
+    %
+    In fact, we can replace $P$ by the polynomial ideal it generates,
+    and obtain that $\FF_\alpha = V(P) = V(\ideal P)$ is also the set of common zeroes of $\ideal P$.
+    %
+    But $\ideal P$ is just the limit $\bigcup_{n = 0}^\infty I_n$ of the polynomial ideal chain~\cref{eq:infiltration ideal chain}.
+    %
+    We know that there is a computable $N \in \N$ \st~$\ideal P = I_N = \ideal {P_N}$,
+    and thus $\FF_\alpha$ is the set of common zeroes $\FF_\alpha = V(P_N)$
+    of the \emph{finite} and \emph{computable} set of polynomials $P_N \subseteq P$
+    obtained by considering words of length $\leq N$,
+    %
+    \begin{align*}
+        P_N := \setof {\Delta_w \alpha \in \poly \Q X}{w \in \Sigma^{\leq N}}.
+    \end{align*}
+    %
+    As a consequence, $\FF_\alpha$ is an \emph{effective} algebraic variety,
+    since its membership problem $F \in \FF_\alpha$ is decidable:
+    it suffices to check whether all polynomials in $P_N$ vanish on $F$.
+    %
+    We can use $P_N$ to solve the following two variants of the zeroness problem:
+    %
+    \begin{enumerate}
+        \item %{$\exists$-commutativity}: 
+        Decide whether \emph{there exists} an initial condition $F : X \to \C$
+        giving rise to the zero semantics.
+
+        Thanks to \emph{Hilbert's Nullstellensatz}~\cite[Theorem 1, §1, Ch.~4]{CoxLittleOShea:Ideals:2015},
+        this amounts to check whether the ideal generated by $P_N$ does not contain $1$.
+        %
+        The latter can be established with standard techniques
+        from computational algebraic geometry,
+        such as \emph{Gröbner bases}~\cite[Ch.~2]{CoxLittleOShea:Ideals:2015}.
+
+        \item %{$\forall$-commutativity}:
+        Decide whether \emph{every} initial condition $F : X \to \C$
+        gives rise to the zero semantics.
+        %
+        This is equivalent to $P_N = \set 0$.
+    \end{enumerate}
+\end{remark}
+
+The following theorem summarises the results on infiltration-finite series that we have obtained.
+%
+\begin{theorem}
+    \label{thm:infiltration finite - effective prevariety}
+    The class of infiltration-finite series is an effective prevariety.
+    Consequently, the commutativity problem is decidable.
+    Finally, the commutativity problem is at least as hard as the equivalence problem (under polynomial time reductions)
+\end{theorem}
+%
+\begin{proof}
+    The effective closure properties~\cref{prevariety:A,prevariety:B} 
+    have been established in~\cref{lem:infiltration closure}
+    and decidability of equality in~\cref{thm:infiltration finite - decidable equality}.
+    %
+    Decidability of commutativity follows from \cref{thm:commutativity for effective prevarieties}.
+    %
+    Hardness of commutativity follows from~\cref{lem:equality reduces to commutativity}
+    and the fact that infiltration-finite series are effectively closed under anti-derivatives~(\cref{lem:infiltration closure}).
+\end{proof}

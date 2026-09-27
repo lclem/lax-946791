@@ -1,0 +1,248 @@
+%!TEX root main.tex
+\section{Preliminaries}
+\label{sec:preliminaries}
+
+% To simplify notation,
+% we assume that function application binds tighter than any other operation.
+% %
+% Sometimes we use redundant parentheses for clarity or emphasis.
+%
+% Let $\Q$ be the field of rational numbers.
+%
+We say that a structure (such as a class of series, a class of languages, an algebra, etc...)
+is \emph{effective} if its elements can be finitely represented (with a decidable syntax),
+equality between elements can be decided based on their representations,
+and all the structure operations can be carried over algorithmically.
+%
+For instance the class of regular languages is effective,
+since they can be represented by finite automata (amongst many other options)
+and language equality is decidable.
+%
+Most results in the paper hold for any field,
+however for computability considerations we need to restrict ourselves to effective fields.
+%
+For concreteness, we consider the field of rational numbers $\Q$,
+however all our results hold for other effective fields,
+such as the real numbers $\R$ or the complex numbers $\C$.
+
+\paragraph{Series.}
+
+Let $\Sigma = \set{a_1, \dots, a_d}$ be a finite input alphabet.
+% We denote letters from $\Sigma$ by $a, b, c$.
+% %
+We denote by $\Sigma^*$ the set of \emph{finite words} over $\Sigma$,
+a monoid under the operation of concatenation,
+with neutral element the empty word $\e$.
+% %
+% We use $u, v, w$ to denote words in $\Sigma^*$.
+% %
+The main object of study in this paper are \emph{series} over $\Q$,
+which are mappings $\Sigma^* \to \Q$.
+%
+These are sometimes called \emph{weighted languages}
+and are denoted by $\series \Q \Sigma$.
+%
+We refer to~\cite{BerstelReutenauer:CUP:2010} for a general introduction.
+%
+We use $f, g, h$ to denote series in $\series \Q \Sigma$,
+and we write a series $f$ as $\sum_{w \in \Sigma^*} f_w \cdot w$,
+where the value of $f$ at $w$ is $f_w \in \Q$.
+%
+We also write $\coefficient w f$ for $f_w$.
+%
+The \emph{support} of a series $f$
+is the set of words $w$ such that $f_w \neq 0$.
+%
+A \emph{polynomial} is a series with finite support. 
+%
+Thus, $3aab - \frac 5 2 bc$ is a polynomial
+and $1+a+a^2 + \cdots$ is a series but not a polynomial.
+
+The set of series is equipped with a variety of operations.
+%
+It carries the structure of a vector space,
+with \emph{zero} $\zero$,
+\emph{scalar multiplication} $c \cdot f$ with $c \in \Q$,
+and \emph{addition} $f + g$ all defined element-wise by
+%
+\begin{align*}
+    \coefficient w \zero := 0, \qquad
+    \coefficient w {(c \cdot f)} := c \cdot \coefficient w f, \qquad \text{and} \qquad
+    \coefficient w {(f + g)} := \coefficient w f + \coefficient w g,
+    \qquad \forall w \in \Sigma^*.
+\end{align*}
+%
+This vector space is equipped with two important families of linear maps,
+called \emph{left} and \emph{right derivatives}
+$\deriveleft a, \deriveright a : \series \Q \Sigma \to \series \Q \Sigma$,
+for every $a \in \Sigma$.
+%
+They are the series analogues of language quotients:
+%
+For every series $f \in \series \Q \Sigma$,
+they are defined element-wise by
+%
+\begin{align*}
+    \coefficient w {(\deriveleft a f)}
+        &:= \coefficient {a \cdot w} f,
+    \qquad\text{resp.,}\qquad
+    \coefficient w {(\deriveright a f)}
+        := \coefficient {w \cdot a} f,
+    \qquad \forall w \in \Sigma^*.
+\end{align*}
+%
+The following elementary observation will be very useful.
+%
+\begin{restatable}[Left and right derivatives commute]{lemma}{leftRightComm}
+    \label{lem:derive left right commutativity}
+    For every two letters $a, b \in \Sigma$,
+    we have $\deriveleft a \circ \deriveright b = \deriveright b \circ \deriveleft a$.
+\end{restatable}
+\noindent
+(By $\deriveleft a \circ \deriveright b$ we mean the \emph{composition} of the two derivatives,
+which is the function mapping a series $f$ to the series $\deriveleft a \deriveright b f$.
+We avoid writing parenthesis for function application when possible.)
+%
+% \begin{proof}
+%     This follows from associativity of concatenation of finite words:
+%     Indeed, for any series $f \in \series \Q \Sigma$ and word $w \in \Sigma^*$ we have,
+%     \begin{align*}
+%         \coefficient w {\deriveleft u \deriveright v f}
+%             &= \coefficient {uw} {\deriveright v f}
+%             = \coefficient {uwv} f, \quad \text{ and } \\
+%         \coefficient w {\deriveright v \deriveleft u f}
+%             &= \coefficient {wv} {\deriveright v f}
+%             = \coefficient {uwv} f. \qedhere
+%     \end{align*}
+% \end{proof}
+%
+% We will later equip series with several bilinear multiplication operations,
+% turning them into algebras.
+%
+% These operations will be defined later in the releavant sections.
+%
+% We don't need this
+% \paragraph{Concatenation product (Cauchy product)}
+%
+% The \emph{concatenation product} of two series $f, g$
+% is the series $f \cdot g$ \st~for every input word $w$ we have
+% %
+% \begin{align*}
+%     \coefficient w {(f \cdot g)} := \sum_{w = u \cdot v} f_u \cdot g_v,
+% \end{align*}
+% %
+% where the sum runs over all finite words $u, v \in \Sigma^*$.
+% %
+% Note that we have overloaded the symbol ``$\cdot$''
+% to denote both the concatenation of words and of series.
+%
+% \paragraph{Shuffle product}
+% \label{sec:shuffle product}
+% The \emph{shuffle} of two words $u, v$ is the polynomial $u \shuffle v \in \ncpoly \Q \Sigma$,
+% which is defined by induction on the length of words as follows:
+% %
+% \begin{align*}
+%     u \shuffle \e
+%         &:= \e \shuffle u := u, \\
+%     (a \cdot u) \shuffle (b \cdot v)
+%         &:= a \cdot (u \shuffle (b\cdot v)) + b \cdot ((a \cdot u) \shuffle v).
+% \end{align*}
+% %
+% For instance, $ab \shuffle c = cab + acb + abc$ and $a \shuffle a = 2aa$.
+% %
+% This operation is lifted on series $f, g$ by distributivity:
+% $f \shuffle g := \sum_{u, v \in \Sigma^*} f_u \cdot g_v \cdot (u \shuffle v)$.
+% %
+% We will come back to the shuffle product and its properties in \cref{sec:shuffle}.
+%
+Derivatives are extended to all finite words homomorphically:
+$\deriveleft \e f := f$ and $\deriveleft {a \cdot w} f := \deriveleft w (\deriveleft a f)$
+for all $a \in \Sigma$ and $w \in \Sigma^*$ (note that the order is reversed);
+similarly for right derivatives.
+
+\paragraph{Prevarieties of series.}
+% We now recall an important notion from the theory of series.
+%
+Let $\SS$ be a class of series,
+and for an alphabet $\Sigma$ let $\SS_\Sigma$ the subset of $\SS$
+consisting of series over input alphabet $\Sigma$. %of the form $\series \Q \Sigma$.
+%
+We require that $\SS_\Gamma \supseteq \SS_\Sigma$ for every alphabet $\Gamma \supseteq \Sigma$.
+%
+A class of series $\SS$ is a \emph{prevariety} %(\cf~\cite[Sec.~III.1]{Reutenauer_1980})
+if the following two conditions hold, for every alphabet $\Sigma$:
+%
+\begin{enumerate}[label=\textbf{(V.\arabic*)}]
+    
+    \item \label{prevariety:A}
+    $\SS_\Sigma$ is a vector space over $\Q$.
+
+    \item \label{prevariety:B}
+    Closure under derivatives:
+    For every series $f \in \SS_\Sigma$ and letter $a \in \Sigma$,
+    the series $\deriveleft a f$ and $\deriveright a f$ are in $\SS_\Sigma$.
+
+\end{enumerate}
+%
+(A \emph{variety}, as introduced by Reutenauer,
+is a prevariety which satisfies an additional condition (\cf~\cite[Sec.~III.1]{Reutenauer_1980});
+we will not need this notion in the rest of the paper.)
+% \begin{enumerate}[label=\textbf{(V.\arabic*)}]
+%     \setcounter{enumi}{2}
+%     \item \label{prevariety:C}
+%     For every series $f \in \SS_\Sigma$
+%     and algebra homomorphism%
+%     \footnote{
+%         The corresponding requirement in \cite[Sec.~III.1]{Reutenauer_1980}
+%         demands closure \wrt~algebra homomorphisms of the form $\varphi \in \series \Q \Gamma \to \series \Q \Sigma$.
+%         %
+%         However $f \circ \varphi$ may not be defined when $\varphi$ produces series with infinite supports.
+%         For instance take $f = \varphi(a) = 1 + a + a^2 + \cdots$.
+%         Then $(f \circ \varphi)(a) = \inner f {\varphi(a)} = 1 + 1 + \cdots$ is not defined.
+%         %
+%         For this reason $\varphi$ needs to be restricted to be a homomorphism of series with finite supports.
+%     }
+%     $\varphi : \ncpoly \Q \Gamma \to \ncpoly \Q \Sigma$,
+%     % $\varphi \in \series \Q \Gamma \to \series \Q \Sigma$,
+%     % $\varphi : \Gamma^* \to \series \Q \Sigma$,
+%     the series $f \circ \varphi$ is in $\SS_\Gamma$.
+% \end{enumerate}
+% %
+% In the rest of the paper we will need only the notion of prevariety.
+%
+The \emph{equality problem} for a prevariety of series $\SS$ is the following decision problem:
+Given (finite representations of) two series $f, g \in \SS$, is it the case that $f = g$?
+%
+In the special case when $g = \zero$ we obtain the \emph{zeroness problem}.
+%
+A class of series $\SS$ is an \emph{effective prevariety} if it is a prevariety,
+and moreover
+%
+\begin{enumerate}
+    \item Every series in $\SS$ admits a decidable finite presentation.
+    \item The closure properties \cref{prevariety:A} and \cref{prevariety:B} %in the definition of prevariety
+    can be carried over algorithmically by manipulating finite presentations.
+    \item The equality problem is decidable for series in $\SS$.
+\end{enumerate}
+%
+% The notion of effective variety is defined in the expected way.
+%
+\noindent
+% In the first point, we do not care about the specific finite representation of a series,
+% but only that it can be finitely represented.
+% For instance, regular languages are finitely represented by finite automata, regular expressions, or formulas in monadic second-order logic.
+% %
+%(By a \emph{finite presentation} for series we mean a concrete syntax
+%in the same sense, \eg, finite automata are finite presentations for regular languages.)
+%
+Thanks to the equivalence $f = g \iff f - g = \zero$ and~\cref{prevariety:A},
+the notion of effective prevariety does not change if we replace the third condition above
+with the following seemingly weaker one:
+%
+\begin{enumerate}
+    \item[3')] the zeroness problem is decidable for series in $\SS$.
+\end{enumerate}
+%
+\noindent
+For instance, the class of rational series is an effective prevariety~\cite[Sec.~III.2.b]{Reutenauer_1980},
+as we recall later in section~\cref{sec:recognisable}.
