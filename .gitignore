@@ -3,3 +3,8 @@ paper.pdf
 paper-web.tar
 lake-manifest.json
 .lake/
+.DS_Store
+._*
+scratch/
+paper/comment.cut
+paper/*.log

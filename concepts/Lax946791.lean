@@ -1,0 +1,11 @@
+import Lax946791.Series
+import Lax946791.Prevariety
+import Lax946791.Commutativity
+import Lax946791.Recognisable
+import Lax946791.Hadamard
+import Lax946791.Shuffle
+import Lax946791.Infiltration
+import Lax946791.IdealMembership
+import Lax946791.Polyrec
+import Lax946791.CDA
+import Lax946791.PolynomialAutomata

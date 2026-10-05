@@ -1,1 +1,5 @@
-TODO: describe this submission.
+A *formal series* in noncommuting variables $\Sigma$ over the rationals is a mapping $\Sigma^* \to \mathbb{Q}$ from the free monoid on $\Sigma$ to the rationals; it is *commutative* if the value on a word does not depend on the order of its letters. The *commutativity problem* for a class of series takes a finite presentation of a series in the class and asks whether it is commutative — a natural, nontrivial problem not previously considered from an algorithmic perspective.
+
+We show that commutativity is decidable for every class of series forming an *effective prevariety*, a notion generalizing Reutenauer's varieties of formal series. This submission formalizes that meta-theorem and applies it to three families of automata — **Hadamard**, **shuffle**, and **infiltration** — each of which is proved to recognize an effective prevariety over $\mathbb{Q}$, so that commutativity is decidable for the series they recognize. The three cases are treated by a single ideal-chain argument reducing series equality to ideal membership in a multivariate polynomial ring.
+
+The one open obligation is the decidability of ideal membership in $\mathbb{Q}[x_1, \dots, x_k]$ (a Gröbner-basis fact absent from mathlib), stated but not proved; the commutativity-decidability results for the three automaton classes follow from it.

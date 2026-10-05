@@ -418,6 +418,7 @@ In the following, define $\sigma^R_a f := f + \deriveright a f$, for all $f \in 
     % and thus $\sigma^R_a$ is its induced endomorphism.
 \end{proof}
 
+% lax begin Lax946791.Infiltration
 \subsection{Infiltration-finite series}
 \label{sec:infiltration-finite series}
 
@@ -781,8 +782,10 @@ there is $N \in \N$ \st~the chain stabilises $I_N = I_{N+1} = \cdots$.
 Thanks to the last point of~\cref{lem:infiltration ideals}, such an $N$ is computable:
 Indeed, $N$ can be taken to be the smallest $n \in \N$ \st~$I_n = I_{n+1}$,
 and ideal equality can be decided by checking that the generators of $I_{n+1}$ are all in $I_n$.
+% lax begin Lax946791.IdealMembership
 The latter test is an instance of the \emph{ideal membership problem},
 which is decidable (in exponential space)~\cite{Mayr:STACS:1989}.
+% lax end
 %
 We call such minimal $N$ the \emph{stabilisation index} of the ideal chain.
 %
@@ -967,3 +970,4 @@ The following theorem summarises the results on infiltration-finite series that 
     Hardness of commutativity follows from~\cref{lem:equality reduces to commutativity}
     and the fact that infiltration-finite series are effectively closed under anti-derivatives~(\cref{lem:infiltration closure}).
 \end{proof}
+% lax end
