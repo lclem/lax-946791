@@ -952,7 +952,7 @@ private theorem toSeries_evalCDA (d k : ℕ) (fs : Fin k → Lax946791.CDA.ExpPo
   apply Finset.sum_congr rfl
   intro m hm
   rw [hE m]
-  rfl
+  rw [shuffleProd_eq_fold]
 
 /-! ### The companion shuffle automaton -/
 
@@ -1069,9 +1069,8 @@ private theorem shuffleProd_local {α : Type*} (k : ℕ) (v : List α) (m : Fin 
     (fs fs' : Fin k → Series α)
     (h : ∀ w, w.length ≤ v.length → ∀ i, fs i w = fs' i w) :
     shuffleProd α k fs m v = shuffleProd α k fs' m v := by
-  dsimp [shuffleProd]
-  rw [foldr_eq_univfold (α := α) k (shuffleUnit α) (fun i => shufflePow α (fs i) (m i))]
-  rw [foldr_eq_univfold (α := α) k (shuffleUnit α) (fun i => shufflePow α (fs' i) (m i))]
+  rw [shuffleProd_eq_fold, foldr_eq_univfold (α := α) k (shuffleUnit α) (fun i => shufflePow α (fs i) (m i))]
+  rw [shuffleProd_eq_fold, foldr_eq_univfold (α := α) k (shuffleUnit α) (fun i => shufflePow α (fs' i) (m i))]
   have hpow : ∀ (i : Fin k) (w : List α), w.length ≤ v.length →
       shufflePow α (fs i) (m i) w = shufflePow α (fs' i) (m i) w := by
     intro i w hw
@@ -1264,7 +1263,7 @@ private theorem bridge (d k : ℕ) (hd : 0 < d) (hk : 0 < k)
 /-- `A.sem (X_i)` is shuffle-finite in the semantic sense: it is the shuffle polynomial
     `X_i` in the left-derivative-closed tuple `(A.sem (X_0), …, A.sem (X_{k-1}))`. -/
 private theorem shuffleFiniteSem_sem (α : Type*) (A : ShuffleAutomaton α) (i : Fin A.dim) :
-    IsShuffleFiniteSem α (A.sem (X i)) := by
+    IsShuffleFinite α (A.sem (X i)) := by
   refine ⟨A.dim, fun j => A.sem (X j), X i, ?_, ?_⟩
   · exact sem_eq_shuffleEval A (X i)
   · intro a j
@@ -1275,10 +1274,10 @@ private theorem shuffleFiniteSem_sem (α : Type*) (A : ShuffleAutomaton α) (i :
       _ = shuffleEval α A.dim (fun j' => A.sem (X j')) (A.Δ a j) :=
         sem_eq_shuffleEval A (A.Δ a j)
 
-/-- `A.sem (X_i)` is shuffle-finite (by the coincidence, from shuffle-finite-sem). -/
+/-- `A.sem (X_i)` is shuffle-recognisable (by the coincidence, from shuffle-finite). -/
 private theorem recognisable_sem (α : Type*) (A : ShuffleAutomaton α) (i : Fin A.dim) :
-    IsShuffleFinite α (A.sem (X i)) :=
-  (ShuffleCoincidence (A.sem (X i))).mpr (shuffleFiniteSem_sem α A i)
+    IsShuffleRecognisable α (A.sem (X i)) :=
+  (ShuffleCoincidence (A.sem (X i))).mp (shuffleFiniteSem_sem α A i)
 
 /-- An automaton whose recognised series is `A.sem (X_i)` (chosen by the axiom of
     choice). -/

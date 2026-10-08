@@ -14,14 +14,17 @@ import Mathlib.Algebra.MvPolynomial.Eval
 title: Shuffle automata and shuffle-finite series
 type: theorem
 ---
-A series is *shuffle-finite* if it is recognised by a *shuffle automaton*
-`(k, F, Δ)`: a configuration space `ℚ[X_1, …, X_k]`, a final-weight functional
-`F`, and a transition `Δ_a` that extends to a *derivation* of the configuration
-space (the paper's differential-algebra structure, §6).  The shuffle-finite
-series form an effective prevariety, so equality and the commutativity problem
-are decidable for them; the equality decision reduces to ideal membership in the
-configuration polynomial ring (the open leaf), via the same ideal-chain argument
-as for the Hadamard and infiltration automata.
+A series is *shuffle-finite* if it belongs to a finitely generated differential
+shuffle algebra (paper §6.2.2): it is a shuffle polynomial in a finite tuple of
+series that is closed under left derivatives.  Equivalently (the coincidence),
+it is recognised by a *shuffle automaton* `(k, F, Δ)`: a configuration space
+`ℚ[X_1, …, X_k]`, a final-weight functional `F`, and a transition `Δ_a` that
+extends to a *derivation* of the configuration space (the paper's differential-
+algebra structure, §6).  The shuffle-finite series form an effective prevariety,
+so equality and the commutativity problem are decidable for them; the equality
+decision reduces to ideal membership in the configuration polynomial ring (the
+open leaf), via the same ideal-chain argument as for the Hadamard and
+infiltration automata.
 -/
 
 namespace Lax946791.Shuffle
@@ -47,6 +50,44 @@ noncomputable def shuffleRec (α : Type*) (f g : Series α) (w : List α) : ℚ 
     and `v` that yield `w`. -/
 noncomputable def shuffle (α : Type*) (f g : Series α) : Series α :=
   fun w => shuffleRec α f g w
+
+/-- The unit of the shuffle product: the delta series, `1` on the empty word and `0`
+    elsewhere.  Unlike the constant-`1` series (the unit of the pointwise product), the
+    delta series is the unit of the *shuffle* product. -/
+def shuffleUnit (α : Type*) : Series α := fun w => if w = [] then 1 else 0
+
+/-- The `n`-fold iterated shuffle power of `f`: `shufflePow α f 0 = shuffleUnit α` (the
+    shuffle unit) and `shufflePow α f (n+1) = f ⧢ shufflePow α f n`.  This is the shuffle
+    analogue of the pointwise power `f ^ n` used in `hadamardEval`. -/
+noncomputable def shufflePow (α : Type*) (f : Series α) (n : ℕ) : Series α :=
+  match n with
+  | 0 => shuffleUnit α
+  | n + 1 => shuffle α f (shufflePow α f n)
+
+/-- The shuffle product of the iterated shuffle powers `fs 0 ⧢^[d 0] ⧢ ⋯ ⧢ fs (k-1) ⧢^[d (k-1)]`,
+    where `⧢` is the shuffle product and `⧢^[n]` is the iterated shuffle power
+    (`shufflePow`).  This is the shuffle analogue of the pointwise monomial product
+    `∏ i, (fs i) ^ (d i)` used in `hadamardEval`; it is the shuffle fold of the
+    commutative-associative shuffle operation over all indices (the zero-exponent terms
+    contribute the shuffle unit, which is the identity).  It is computed as a right-fold
+    over the index list, so that the definition does not depend on the `Std.Commutative`/
+    `Std.Associative` instances (which the axiom-free concept package cannot carry); the
+    proof package shows it equals the corresponding `Finset.fold` (`shuffleProd_eq_fold`). -/
+noncomputable def shuffleProd (α : Type*) (k : ℕ) (fs : Fin k → Series α) (d : Fin k →₀ ℕ) : Series α :=
+  (((Finset.univ : Finset (Fin k)).toList).map (fun i => shufflePow α (fs i) (d i))).foldr
+    (fun x acc => shuffle α x acc) (shuffleUnit α)
+
+/-- The evaluation of the polynomial `p` in the *shuffle* algebra, sending `X_i` to
+    `fs i`: `shuffleEval α k fs p = ∑ d ∈ p.support, p.coeff d · (fs 0 ⧢^[d 0] ⧢ ⋯ ⧢
+    fs (k-1) ⧢^[d (k-1)])`, where `⧢` is the shuffle product and `⧢^[n]` is the iterated
+    shuffle power.  This is the shuffle analogue of `hadamardEval` (which evaluates in the
+    pointwise ring); because the shuffle ring cannot be a `CommRing` instance on `Series α`
+    (which already carries the pointwise ring), it is defined directly as the sum over the
+    polynomial's support of the coefficients times the shuffle product of the iterated
+    powers. -/
+noncomputable def shuffleEval (α : Type*) (k : ℕ) (fs : Fin k → Series α)
+    (p : MvPolynomial (Fin k) ℚ) : Series α :=
+  p.support.sum fun m => p.coeff m • shuffleProd α k fs m
 
 /-- The unique derivation of the polynomial ring `MvPolynomial σ R` sending the
     variable `X i` to `φ i`, defined by the Leibniz rule on monomials:
@@ -91,9 +132,27 @@ noncomputable def ShuffleAutomaton.recognised {α : Type*} (A : ShuffleAutomaton
     Series α :=
   A.sem (MvPolynomial.X (Fin.mk 0 A.hdim))
 
-/-- A series is *shuffle-finite* if it is recognised by some shuffle automaton. -/
+/-- A series is *shuffle-finite* (working definition, paper §6.2.2) if it belongs to a
+    finitely generated differential shuffle algebra: it is a shuffle polynomial in a
+    finite tuple of series `fs` that is closed under left derivatives, i.e.
+    `f = shuffleEval k fs p` for some polynomial `p`, and `leftDeriv a (fs i)` is again a
+    shuffle polynomial in `fs` for every letter `a` and index `i`.  Here `shuffleEval k fs`
+    is the evaluation in the shuffle algebra generated by `fs`. -/
 def IsShuffleFinite (α : Type*) (f : Series α) : Prop :=
+  ∃ k : ℕ, ∃ fs : Fin k → Series α, ∃ p : MvPolynomial (Fin k) ℚ,
+    f = shuffleEval α k fs p ∧
+    ∀ a : α, ∀ i : Fin k, ∃ q : MvPolynomial (Fin k) ℚ,
+      leftDeriv α a (fs i) = shuffleEval α k fs q
+
+/-- A series is *shuffle-recognisable* if it is recognised by some shuffle automaton. -/
+def IsShuffleRecognisable (α : Type*) (f : Series α) : Prop :=
   ∃ A : ShuffleAutomaton α, A.recognised = f
+
+/-- A series is shuffle-finite if and only if it is shuffle-recognisable
+    (paper §6, the coincidence lemma): the finitely generated differential shuffle
+    algebras are exactly the languages of shuffle automata. -/
+axiom ShuffleCoincidence (α : Type*) (f : Series α) :
+  IsShuffleFinite α f ↔ IsShuffleRecognisable α f
 
 /-- The class of shuffle-finite series is closed under addition, scalar
     multiplication, the shuffle product, and right derivatives (paper §6, the

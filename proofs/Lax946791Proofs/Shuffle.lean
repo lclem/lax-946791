@@ -66,11 +66,6 @@ variable {α : Type*}
 
 /-! ### The shuffle product is a commutative ring multiplication -/
 
-/-- The unit of the shuffle product: the delta series, `1` on the empty word and `0`
-    elsewhere.  Unlike the constant-`1` series (the unit of the pointwise product), the
-    delta series is the unit of the *shuffle* product. -/
-def shuffleUnit (α : Type*) : Series α := fun w => if w = [] then 1 else 0
-
 /-- The left derivative is `ℚ`-linear: it preserves addition. -/
 private theorem leftDeriv_add (a : α) (f g : Series α) :
     leftDeriv α a (f + g) = leftDeriv α a f + leftDeriv α a g := by
@@ -517,14 +512,6 @@ private theorem sem_shuffle (A : ShuffleAutomaton α)
 
 /-! ### The shuffle-algebra evaluation (the semantic working definition) -/
 
-/-- The `n`-fold iterated shuffle power of `f`: `shufflePow α f 0 = shuffleUnit α` (the
-    shuffle unit) and `shufflePow α f (n+1) = f ⧢ shufflePow α f n`.  This is the shuffle
-    analogue of the pointwise power `f ^ n` used in `hadamardEval`. -/
-noncomputable def shufflePow (α : Type*) (f : Series α) (n : ℕ) : Series α :=
-  match n with
-  | 0 => shuffleUnit α
-  | n + 1 => shuffle α f (shufflePow α f n)
-
 /-- `shufflePow α f 0 = shuffleUnit α`. -/
 private theorem shufflePow_zero (f : Series α) : shufflePow α f 0 = shuffleUnit α := rfl
 
@@ -560,14 +547,27 @@ private theorem shufflePow_one (f : Series α) : shufflePow α f 1 = f := by
 instance : Std.Commutative (shuffle α) := ⟨shuffle_comm⟩
 instance : Std.Associative (shuffle α) := ⟨shuffle_assoc⟩
 
-/-- The shuffle product of the iterated shuffle powers `fs 0 ⧢^[d 0] ⧢ ⋯ ⧢ fs (k-1) ⧢^[d (k-1)]`,
-    where `⧢` is the shuffle product and `⧢^[n]` is the iterated shuffle power
-    (`shufflePow`).  This is the shuffle analogue of the pointwise monomial product
-    `∏ i, (fs i) ^ (d i)` used in `hadamardEval`; it is the `Finset.fold` of the
-    commutative-associative shuffle operation over all indices (the zero-exponent terms
-    contribute the shuffle unit, which is the identity). -/
-noncomputable def shuffleProd (α : Type*) (k : ℕ) (fs : Fin k → Series α) (d : Fin k →₀ ℕ) : Series α :=
-  (Finset.univ : Finset (Fin k)).fold (shuffle α) (shuffleUnit α) (fun i => shufflePow α (fs i) (d i))
+/-- The concept package's `shuffleProd` (a typeclass-free right-fold over the index list)
+    equals the `Finset.fold` of the shuffle product over all indices: both compute the
+    shuffle product of the iterated powers `fs i ⧢^[d i]`, and the shuffle product is
+    commutative and associative, so the result is independent of the order of the factors. -/
+theorem shuffleProd_eq_fold (k : ℕ) (fs : Fin k → Series α) (d : Fin k →₀ ℕ) :
+    shuffleProd α k fs d =
+      (Finset.univ : Finset (Fin k)).fold (shuffle α) (shuffleUnit α) (fun i => shufflePow α (fs i) (d i)) := by
+  unfold shuffleProd
+  -- The LHS folds with `fun x acc => shuffle α x acc`, eta-equivalent to `shuffle α`
+  -- (the latter is the term carrying the `Std.Commutative`/`Std.Associative` instances,
+  -- which `Multiset.coe_fold_r` requires).
+  change List.foldr (shuffle α) (shuffleUnit α) (List.map (fun i => shufflePow α (fs i) (d i)) Finset.univ.toList) =
+      (Finset.univ : Finset (Fin k)).fold (shuffle α) (shuffleUnit α) (fun i => shufflePow α (fs i) (d i))
+  -- Both sides fold the shuffle product over the image of `Finset.univ` under
+  -- `i ↦ shufflePow (fs i) (d i)`: the LHS is the `List.foldr` over the list representative
+  -- (`Multiset.coe_fold_r`), the RHS the `Finset.fold`; the multiset being folded is the
+  -- same in both (`Finset.coe_toList`, `Multiset.map_coe`).  The rewrite brings the LHS to a
+  -- `Multiset.fold`; unfolding the RHS `Finset.fold` (whose definition is a `Multiset.fold`)
+  -- makes the two sides identical, closing the goal.
+  rw [← Multiset.coe_fold_r, ← Multiset.map_coe, Finset.coe_toList]
+  dsimp only [Finset.fold]
 
 /-- `shuffleProd α k fs 0 = shuffleUnit α`: every iterated power is the shuffle unit (the
     zero power), and shuffling the unit with itself is the unit. -/
@@ -582,7 +582,7 @@ private theorem shuffleProd_zero (k : ℕ) (fs : Fin k → Series α) :
     · intro a s h ih
       rw [Finset.fold_insert h, ih]
       simp [shuffle_unit_left]
-  rw [shuffleProd]
+  rw [shuffleProd_eq_fold]
   have hLHS : (Finset.univ : Finset (Fin k)).fold (shuffle α) (shuffleUnit α)
       (fun i => shufflePow α (fs i) ((0 : Fin k →₀ ℕ) i)) =
       (Finset.univ : Finset (Fin k)).fold (shuffle α) (shuffleUnit α) (fun _ => shuffleUnit α) := by
@@ -625,7 +625,7 @@ private theorem shuffleProd_X (k : ℕ) (fs : Fin k → Series α) (i : Fin k) :
       · have hne : i ≠ a := by
           intro h; exact ha h.symm
         simp [ha, hne, shuffle_unit_left, Finset.mem_insert]
-  rw [shuffleProd]
+  rw [shuffleProd_eq_fold]
   simp [this, Finset.mem_univ]
 
 /-- `shuffleProd α k fs (m + n) = shuffleProd α k fs m ⧢ shuffleProd α k fs n`: the
@@ -634,7 +634,7 @@ private theorem shuffleProd_X (k : ℕ) (fs : Fin k → Series α) (i : Fin k) :
     (`Finset.fold_op_distrib`). -/
 private theorem shuffleProd_add (k : ℕ) (fs : Fin k → Series α) (m n : Fin k →₀ ℕ) :
     shuffleProd α k fs (m + n) = shuffle α (shuffleProd α k fs m) (shuffleProd α k fs n) := by
-  rw [shuffleProd, shuffleProd, shuffleProd]
+  rw [shuffleProd_eq_fold, shuffleProd_eq_fold, shuffleProd_eq_fold]
   have hunit : shuffle α (shuffleUnit α) (shuffleUnit α) = shuffleUnit α := by
     simp [shuffle_unit_left]
   have hsplit : ∀ i, shufflePow α (fs i) (m i + n i) =
@@ -688,21 +688,10 @@ private theorem shuffleProd_add (k : ℕ) (fs : Fin k → Series α) (m n : Fin 
         exact hkey _ _ _ _
   rw [hLHS, hdist Finset.univ]
 
-/-! ### `shuffleEval` is the shuffle-algebra evaluation -/
-
-/-- The evaluation of the polynomial `p` in the *shuffle* algebra, sending `X_i` to
-    `fs i`: `shuffleEval α k fs p = ∑ d ∈ p.support, p.coeff d · (fs 0 ⧢^[d 0] ⧢ ⋯ ⧢
-    fs (k-1) ⧢^[d (k-1)])`, where `⧢` is the shuffle product and `⧢^[n]` is the iterated
-    shuffle power.  This is the shuffle analogue of `hadamardEval` (which evaluates in the
-    pointwise ring); because the shuffle ring cannot be a `CommRing` instance on `Series α`
-    (which already carries the pointwise ring), it is defined directly as the sum over the
-    polynomial's support of the coefficients times the shuffle product of the iterated
-    powers. -/
-noncomputable def shuffleEval (α : Type*) (k : ℕ) (fs : Fin k → Series α)
-    (p : MvPolynomial (Fin k) ℚ) : Series α :=
-  p.support.sum fun m => p.coeff m • shuffleProd α k fs m
-
 /-! ### `shuffleEval` is a homomorphism for the shuffle algebra -/
+
+-- `shuffleEval` (the shuffle-algebra evaluation) is defined in the concept package
+-- (`Lax946791.Shuffle.shuffleEval`); the theorems below are about that definition.
 
 /-- `shuffleEval α k fs 0 = 0`. -/
 private theorem shuffleEval_zero (k : ℕ) (fs : Fin k → Series α) :
@@ -902,14 +891,12 @@ private theorem shuffleEval_mul (k : ℕ) (fs : Fin k → Series α)
           simp [Finset.sum_product]
   rw [hLHS, hRHS]
 
-/-- A series is *shuffle-finite* in the semantic sense (the paper's working definition,
-    §6): it is a shuffle polynomial in a finite tuple `fs` of series that is closed under
-    the left derivatives.  This is the shuffle analogue of `IsHadamardFinite`. -/
-def IsShuffleFiniteSem (α : Type*) (f : Series α) : Prop :=
-  ∃ k, ∃ fs : Fin k → Series α, ∃ p : MvPolynomial (Fin k) ℚ,
-    f = shuffleEval α k fs p ∧ ∀ a i, ∃ q, leftDeriv α a (fs i) = shuffleEval α k fs q
+-- `IsShuffleFinite` (the semantic working definition, paper §6) and
+-- `IsShuffleRecognisable` (recognised by a shuffle automaton) are both defined in the
+-- concept package (`Lax946791.Shuffle`); the coincidence `ShuffleCoincidence` (below)
+-- proves they coincide.
 
-/-! ### The coincidence: shuffle-finite ↔ shuffle-finite-sem -/
+/-! ### The coincidence: shuffle-finite ↔ shuffle-recognisable -/
 
 /-- The derivation of the constant `1` is `0`: `derivationExt φ 1 = 0` (it is
     `MvPolynomial.mkDerivation`, whose `map_one_eq_zero` gives this). -/
@@ -993,7 +980,7 @@ private theorem sem_prod (A : ShuffleAutomaton α) (m : Fin A.dim →₀ ℕ) (s
 private theorem shuffleProd_support (k : ℕ) (fs : Fin k → Series α) (m : Fin k →₀ ℕ) :
     shuffleProd α k fs m =
       (m.support).fold (shuffle α) (shuffleUnit α) (fun i => shufflePow α (fs i) (m i)) := by
-  dsimp [shuffleProd]
+  rw [shuffleProd_eq_fold]
   -- The fold over all indices equals the fold over the support: the zero-exponent terms
   -- contribute the shuffle unit (the identity), which disappears under the fold.
   have hfold : ∀ (s : Finset (Fin k)),
@@ -1310,8 +1297,8 @@ private theorem shuffleEval_embed (f : Series α) (k : ℕ) (fs : Fin k → Seri
     tuple is the generator series `A.sem (X_i)`, closed under left derivatives by
     the derivation property `sem_deriv`; `f` is the shuffle polynomial `X_0` in
     that tuple. -/
-private theorem shuffleFiniteSem_of_finite (f : Series α)
-    (hfin : IsShuffleFinite α f) : IsShuffleFiniteSem α f := by
+private theorem shuffleFinite_of_recognisable (f : Series α)
+    (hfin : IsShuffleRecognisable α f) : IsShuffleFinite α f := by
   obtain ⟨A, hA⟩ := hfin
   let X0 : MvPolynomial (Fin A.dim) ℚ := MvPolynomial.X (Fin.mk 0 A.hdim)
   let fs := fun i => A.sem (MvPolynomial.X i)
@@ -1392,10 +1379,9 @@ private theorem leftDeriv_shuffleProd (k : ℕ) (fs : Fin k → Series α) (a : 
     (m : Fin k →₀ ℕ) :
     leftDeriv α a (shuffleProd α k fs m) =
       ∑ i : Fin k, (m i : ℚ) • (shuffleProd α k fs (m - Finsupp.single i 1) ⧢ leftDeriv α a (fs i)) := by
-  dsimp [shuffleProd]
   let F := fun (s : Finset (Fin k)) =>
       s.fold (shuffle α) (shuffleUnit α) (fun i => shufflePow α (fs i) (m i))
-  have hF_univ : F Finset.univ = shuffleProd α k fs m := rfl
+  have hF_univ : F Finset.univ = shuffleProd α k fs m := (shuffleProd_eq_fold k fs m).symm
   -- The generalized Leibniz rule for the fold, by induction on the Finset.
   have hLeib : ∀ (s : Finset (Fin k)),
       leftDeriv α a (F s) =
@@ -1518,15 +1504,17 @@ private theorem leftDeriv_shuffleProd (k : ℕ) (fs : Fin k → Series α) (a : 
   have hFdel : ∀ i, F ((Finset.univ : Finset (Fin k)) \ {i}) ⧢ shufflePow α (fs i) (m i - 1) =
       shuffleProd α k fs (m - Finsupp.single i 1) := by
     intro i
-    dsimp [F, shuffleProd]
+    dsimp [F]
+    rw [shuffleProd_eq_fold]
     -- The LHS is the fold over `univ \ {i}` of `shufflePow α (fs j) (m j)`, times the `i`-th
     -- factor `shufflePow α (fs i) (m i - 1)`.  The RHS is the fold over `univ` of
-    -- `shufflePow α (fs j) ((m - e_i) j)`; because `Finsupp.tsub` is pointwise (`tsub_apply`
-    -- is `rfl`), `dsimp` reduces `(m - e_i) j` to `m j - (e_i) j`.  Since
-    -- `univ = insert i (univ \ {i})` with `i ∉ univ \ {i}`, the RHS fold splits by
-    -- `Finset.fold_insert` into the `i`-th factor (`shufflePow α (fs i) (m i - 1)`, because
-    -- `(e_i) i = 1`) times the fold over `univ \ {i}` (where `(e_i) j = 0`, so `m j - 0 = m j`);
-    -- the shuffle product is commutative.
+    -- `shufflePow α (fs j) ((m - e_i) j)`.  Since `univ = insert i (univ \ {i})` with
+    -- `i ∉ univ \ {i}`, the RHS fold splits by `Finset.fold_insert` into the `i`-th factor
+    -- (`shufflePow α (fs i) ((m - e_i) i)`, which equals `shufflePow α (fs i) (m i - 1)`
+    -- because `(e_i) i = 1`) times the fold over `univ \ {i}` (where `(e_i) j = 0`, so
+    -- `(m - e_i) j = m j`).  We normalise `(m - e_i) ·` to the pointwise `m · - (e_i) ·`
+    -- (`Finsupp.tsub_apply`) so the pointwise-stated `hexp_i`/`hfsub` apply, then use the
+    -- commutativity of the shuffle product.
     have hno : i ∉ (Finset.univ : Finset (Fin k)) \ {i} := by
       simp [Finset.mem_sdiff]
     have huniv : (Finset.univ : Finset (Fin k)) = insert i ((Finset.univ : Finset (Fin k)) \ {i}) := by
@@ -1552,8 +1540,12 @@ private theorem leftDeriv_shuffleProd (k : ℕ) (fs : Fin k → Series α) (a : 
         rw [h] at hjm
         simp [Finset.mem_sdiff] at hjm
       rw [hexp_ne j hjne]
+    -- Normalise `(m - e_i) ·` to the pointwise form `m · - (e_i) ·` (via `Finsupp.tsub_apply`)
+    -- so that `hexp_i`/`hfsub` (stated pointwise) match the goal; the two shuffle factors are
+    -- then equal up to commutativity.
+    simp only [Finsupp.tsub_apply]
     rw [hexp_i, hfsub]
-    rw [shuffle_comm]
+    exact shuffle_comm _ _
   -- Rewrite each summand using `hFdel`.
   calc
     leftDeriv α a (shuffleProd α k fs m) =
@@ -1781,10 +1773,9 @@ private theorem rightDeriv_shuffleProd (k : ℕ) (fs : Fin k → Series α) (a :
     (m : Fin k →₀ ℕ) :
     rightDeriv α a (shuffleProd α k fs m) =
       ∑ i : Fin k, (m i : ℚ) • (shuffleProd α k fs (m - Finsupp.single i 1) ⧢ rightDeriv α a (fs i)) := by
-  dsimp [shuffleProd]
   let F := fun (s : Finset (Fin k)) =>
       s.fold (shuffle α) (shuffleUnit α) (fun i => shufflePow α (fs i) (m i))
-  have hF_univ : F Finset.univ = shuffleProd α k fs m := rfl
+  have hF_univ : F Finset.univ = shuffleProd α k fs m := (shuffleProd_eq_fold k fs m).symm
   have hLeib : ∀ (s : Finset (Fin k)),
       rightDeriv α a (F s) =
         ∑ i ∈ s, (m i : ℚ) • (F (s \ {i}) ⧢ shufflePow α (fs i) (m i - 1) ⧢ rightDeriv α a (fs i)) := by
@@ -1893,7 +1884,8 @@ private theorem rightDeriv_shuffleProd (k : ℕ) (fs : Fin k → Series α) (a :
   have hFdel : ∀ i, F ((Finset.univ : Finset (Fin k)) \ {i}) ⧢ shufflePow α (fs i) (m i - 1) =
       shuffleProd α k fs (m - Finsupp.single i 1) := by
     intro i
-    dsimp [F, shuffleProd]
+    dsimp [F]
+    rw [shuffleProd_eq_fold]
     have hno : i ∉ (Finset.univ : Finset (Fin k)) \ {i} := by
       simp [Finset.mem_sdiff]
     have huniv : (Finset.univ : Finset (Fin k)) = insert i ((Finset.univ : Finset (Fin k)) \ {i}) := by
@@ -1919,8 +1911,12 @@ private theorem rightDeriv_shuffleProd (k : ℕ) (fs : Fin k → Series α) (a :
         rw [h] at hjm
         simp [Finset.mem_sdiff] at hjm
       rw [hexp_ne j hjne]
+    -- Normalise `(m - e_i) ·` to the pointwise form `m · - (e_i) ·` (via `Finsupp.tsub_apply`)
+    -- so that `hexp_i`/`hfsub` (stated pointwise) match the goal; the two shuffle factors are
+    -- then equal up to commutativity.
+    simp only [Finsupp.tsub_apply]
     rw [hexp_i, hfsub]
-    rw [shuffle_comm]
+    exact shuffle_comm _ _
   calc
     rightDeriv α a (shuffleProd α k fs m) =
         ∑ i : Fin k, (m i : ℚ) • (F ((Finset.univ : Finset (Fin k)) \ {i}) ⧢
@@ -1962,7 +1958,7 @@ private theorem shuffleProd_nil (k : ℕ) (fs : Fin k → Series α) (m : Fin k 
         simp [Finset.fold_empty, shuffleUnit, Finset.prod_empty]
     | insert x s hx ih =>
         simp [shuffle, Finset.fold_insert hx, shuffleRec_nil, shufflePow_nil, ih, Finset.prod_insert hx]
-  rw [shuffleProd]
+  rw [shuffleProd_eq_fold]
   simpa using this Finset.univ
 
 /-- Every shuffle-finite series in the semantic sense is shuffle-finite (the
@@ -1975,8 +1971,8 @@ private theorem shuffleProd_nil (k : ℕ) (fs : Fin k → Series α) (m : Fin k 
     shuffleEval α (k+1) g p` for all `p` by a word-length induction (the `cons` step uses
     `leftDeriv_shuffleEval_deriv`, since the letter maps are derivations, not ring
     endomorphisms).  Then `A.recognised = A.sem (X_0) = g 0 = f`. -/
-private theorem shuffleFinite_of_finiteSem (f : Series α)
-    (hsem : IsShuffleFiniteSem α f) : IsShuffleFinite α f := by
+private theorem shuffleRecognisable_of_finite (f : Series α)
+    (hsem : IsShuffleFinite α f) : IsShuffleRecognisable α f := by
   obtain ⟨k, fs, p, hf, hclose⟩ := hsem
   let g := extTuple f k fs
   -- `g` is closed under left derivatives
@@ -2090,19 +2086,23 @@ private theorem shuffleFinite_of_finiteSem (f : Series α)
     exact hg0
   exact ⟨A, hrec⟩
 
-/-- The shuffle coincidence theorem (paper §6): a series is shuffle-finite (recognised by a
-    shuffle automaton) if and only if it is a shuffle polynomial in a finite tuple of series
-    closed under the left derivatives.  The "finite implies finite-sem" direction reads off
-    the generator tuple `A.sem (X_i)`; the "finite-sem implies finite" direction extends the
-    witnessing tuple by the series itself and builds the automaton from the closure under
-    left derivatives. -/
+/--
+conclusion: Lax946791.Shuffle.ShuffleCoincidence
+---
+The shuffle coincidence theorem (paper §6): a series is shuffle-finite (a shuffle
+polynomial in a finite tuple of series closed under the left derivatives) if and only
+if it is recognised by a shuffle automaton.  The "finite implies recognisable"
+direction extends the witnessing tuple by the series itself and builds the automaton
+from the closure under left derivatives; the "recognisable implies finite" direction
+reads off the generator tuple `A.sem (X_i)`, closed under left derivatives by the
+derivation property. -/
 theorem ShuffleCoincidence (f : Series α) :
-    IsShuffleFinite α f ↔ IsShuffleFiniteSem α f := by
+    IsShuffleFinite α f ↔ IsShuffleRecognisable α f := by
   constructor
   · intro hfin
-    exact shuffleFiniteSem_of_finite f hfin
-  · intro hsem
-    exact shuffleFinite_of_finiteSem f hsem
+    exact shuffleRecognisable_of_finite f hfin
+  · intro hrec
+    exact shuffleFinite_of_recognisable f hrec
 
 /-! ### The closure: combining witnessing tuples -/
 
@@ -2348,16 +2348,16 @@ private theorem rightDeriv_shuffleEval (k : ℕ) (fs : Fin k → Series α) (a :
 
 /-! ### The semantic closure and the closure theorem -/
 
-/-- The semantic class `IsShuffleFiniteSem` is closed under addition, scalar multiplication,
+/-- The semantic class `IsShuffleFinite` is closed under addition, scalar multiplication,
     the shuffle product, and right derivatives.  The first three parts follow by concatenating
     the witnessing tuples (`combineTuple`/`embedFront`/`embedBack`); the right derivative is
     the extended tuple `(fs, rightDeriv a fs)` (the `rightDerivPoly` polynomial), which is
     closed under left derivatives by the commutativity of the left and right derivatives. -/
-private theorem shuffleFiniteSemClosure :
-    (∀ (f g : Series α), IsShuffleFiniteSem α f → IsShuffleFiniteSem α g → IsShuffleFiniteSem α (f + g)) ∧
-    (∀ (c : ℚ) (f : Series α), IsShuffleFiniteSem α f → IsShuffleFiniteSem α (c • f)) ∧
-    (∀ (f g : Series α), IsShuffleFiniteSem α f → IsShuffleFiniteSem α g → IsShuffleFiniteSem α (shuffle α f g)) ∧
-    (∀ (a : α) (f : Series α), IsShuffleFiniteSem α f → IsShuffleFiniteSem α (rightDeriv α a f)) := by
+private theorem shuffleFiniteClosure :
+    (∀ (f g : Series α), IsShuffleFinite α f → IsShuffleFinite α g → IsShuffleFinite α (f + g)) ∧
+    (∀ (c : ℚ) (f : Series α), IsShuffleFinite α f → IsShuffleFinite α (c • f)) ∧
+    (∀ (f g : Series α), IsShuffleFinite α f → IsShuffleFinite α g → IsShuffleFinite α (shuffle α f g)) ∧
+    (∀ (a : α) (f : Series α), IsShuffleFinite α f → IsShuffleFinite α (rightDeriv α a f)) := by
   constructor
   · -- Addition
     intro f g hf hg
@@ -2448,36 +2448,14 @@ The shuffle closure theorem (paper §6): the shuffle-finite series are closed un
 addition, scalar multiplication, the shuffle product, and right derivatives.  The proof
 proceeds at the semantic level (shuffle polynomials in a tuple closed under left
 derivatives), where the shuffle-algebra evaluation makes the first three parts immediate
-and the right derivative is the extended tuple `(fs, rightDeriv a fs)`; the automaton
-statement follows by the coincidence.
+and the right derivative is the extended tuple `(fs, rightDeriv a fs)`.
 -/
 theorem ShuffleClosure :
     (∀ (f g : Series α), IsShuffleFinite α f → IsShuffleFinite α g → IsShuffleFinite α (f + g)) ∧
     (∀ (c : ℚ) (f : Series α), IsShuffleFinite α f → IsShuffleFinite α (c • f)) ∧
     (∀ (f g : Series α), IsShuffleFinite α f → IsShuffleFinite α g → IsShuffleFinite α (shuffle α f g)) ∧
-    (∀ (a : α) (f : Series α), IsShuffleFinite α f → IsShuffleFinite α (rightDeriv α a f)) := by
-  have hsem := @shuffleFiniteSemClosure α
-  constructor
-  · intro f g hf hg
-    have hfsem : IsShuffleFiniteSem α f := (ShuffleCoincidence f).mp hf
-    have hgsem : IsShuffleFiniteSem α g := (ShuffleCoincidence g).mp hg
-    have hsum : IsShuffleFiniteSem α (f + g) := hsem.1 f g hfsem hgsem
-    exact (ShuffleCoincidence (f + g)).mpr hsum
-  · constructor
-    · intro c f hf
-      have hfsem : IsShuffleFiniteSem α f := (ShuffleCoincidence f).mp hf
-      have hsmul : IsShuffleFiniteSem α (c • f) := hsem.2.1 c f hfsem
-      exact (ShuffleCoincidence (c • f)).mpr hsmul
-    · constructor
-      · intro f g hf hg
-        have hfsem : IsShuffleFiniteSem α f := (ShuffleCoincidence f).mp hf
-        have hgsem : IsShuffleFiniteSem α g := (ShuffleCoincidence g).mp hg
-        have hmul : IsShuffleFiniteSem α (shuffle α f g) := hsem.2.2.1 f g hfsem hgsem
-        exact (ShuffleCoincidence (shuffle α f g)).mpr hmul
-      · intro a f hf
-        have hfsem : IsShuffleFiniteSem α f := (ShuffleCoincidence f).mp hf
-        have hrd : IsShuffleFiniteSem α (rightDeriv α a f) := hsem.2.2.2 a f hfsem
-        exact (ShuffleCoincidence (rightDeriv α a f)).mpr hrd
+    (∀ (a : α) (f : Series α), IsShuffleFinite α f → IsShuffleFinite α (rightDeriv α a f)) :=
+  @shuffleFiniteClosure α
 
 /-! ### The anti-derivative closure -/
 
@@ -2536,7 +2514,7 @@ private theorem shuffleEval_lift (k k' : ℕ) (FS : Fin k → Series α) (fs : F
     `k`, the generator tuple `fs`, the polynomial `p`, and the proofs that
     `f = shuffleEval k fs p` and that `fs` is closed under left derivatives.  Packaged as a
     `Type` (not a `Prop`) so that `Classical.choose` can produce one witness per letter from a
-    `∀ a, IsShuffleFiniteSem …`. -/
+    `∀ a, IsShuffleFinite …`. -/
 structure ShuffleWitnessData (α : Type*) (f : Series α) where
   k : ℕ
   fs : Fin k → Series α
@@ -2544,9 +2522,9 @@ structure ShuffleWitnessData (α : Type*) (f : Series α) where
   hfin : f = shuffleEval α k fs p
   hclose : ∀ a i, ∃ q, leftDeriv α a (fs i) = shuffleEval α k fs q
 
-/-- `IsShuffleFiniteSem α f` is the same as the existence of a `ShuffleWitnessData`. -/
+/-- `IsShuffleFinite α f` is the same as the existence of a `ShuffleWitnessData`. -/
 private theorem ShuffleWitnessData_iff (f : Series α) :
-    IsShuffleFiniteSem α f ↔ ∃ _ : ShuffleWitnessData α f, True := by
+    IsShuffleFinite α f ↔ ∃ _ : ShuffleWitnessData α f, True := by
   constructor
   · intro h
     obtain ⟨k, fs, p, hfp, hfc⟩ := h
@@ -2566,16 +2544,15 @@ concatenation of the witnessing tuples of the `f a`'s: `g` is trivially a shuffl
 in a tuple containing it (its own variable), and the tuple is closed under left derivatives
 because `leftDeriv a g = f a` is a shuffle polynomial in the (closed) witnessing tuple for
 `f a`, and each `f a`'s witnessing tuple is itself closed.  The finiteness of the alphabet is
-what makes the combined tuple finite.  The proof proceeds at the semantic level (shuffle
-polynomials in a tuple closed under left derivatives) and converts via the coincidence.
+what makes the combined tuple finite.  The proof proceeds entirely at the semantic level
+(shuffle polynomials in a tuple closed under left derivatives).
 -/
 theorem ShuffleAntiDerivativeClosure [Fintype α]
     (g : Series α) (f : α → Series α) (hantideriv : IsLeftAntiDerivative α g f)
     (hf : ∀ a, IsShuffleFinite α (f a)) : IsShuffleFinite α g := by
-  have hfsem : ∀ a, IsShuffleFiniteSem α (f a) := fun a => (ShuffleCoincidence (f a)).mp (hf a)
-  have hsem_g : IsShuffleFiniteSem α g := by
+  have hsem_g : IsShuffleFinite α g := by
     let W : (a : α) → ShuffleWitnessData α (f a) :=
-      fun a => Classical.choose ((ShuffleWitnessData_iff (f a)).mp (hfsem a))
+      fun a => Classical.choose ((ShuffleWitnessData_iff (f a)).mp (hf a))
     -- The non-`g` slots: one per element of each `W a .fs`, indexed by the pair `(a, j)`.
     let nonGslots : Finset (α × ℕ) :=
       Finset.biUnion Finset.univ (fun a => (Finset.range ((W a).k)).image (fun j => (a, j)))
@@ -2736,7 +2713,7 @@ theorem ShuffleAntiDerivativeClosure [Fintype α]
         exact shuffleEval_lift (1 + M) (W b).k FS (W b).fs
           (fun j' : Fin (W b).k => slot_of b j'.val j'.isLt) hassign q'
     exact ⟨1 + M, FS, MvPolynomial.X ⟨0, by omega⟩, hfin_g, hclose_FS⟩
-  exact (ShuffleCoincidence g).mpr hsem_g
+  exact hsem_g
 
 /-! ### The orbit ideal chain (zeroness via Hilbert's basis theorem) -/
 
@@ -3171,8 +3148,8 @@ private theorem Mword_zero (A : ShuffleAutomaton α) (w : List α) : A.Mword w 0
     the witnessing tuple is unchanged, and the polynomial is pre-composed with the
     left-derivative polynomials of the generators (`leftDeriv_shuffleEval_deriv`, with the
     letter map a *derivation* — the shuffle analogue of `leftDeriv_hadamardFinite`). -/
-private theorem leftDeriv_shuffleFiniteSem (f : Series α) (hfsem : IsShuffleFiniteSem α f) (a : α) :
-    IsShuffleFiniteSem α (leftDeriv α a f) := by
+private theorem leftDeriv_shuffleFiniteSem (f : Series α) (hfsem : IsShuffleFinite α f) (a : α) :
+    IsShuffleFinite α (leftDeriv α a f) := by
   obtain ⟨k, fs, p, hfp, hfc⟩ := hfsem
   let q : Fin k → MvPolynomial (Fin k) ℚ := fun i => Classical.choose (hfc a i)
   have hq : ∀ i, leftDeriv α a (fs i) = shuffleEval α k fs (q i) := by
@@ -3184,17 +3161,10 @@ private theorem leftDeriv_shuffleFiniteSem (f : Series α) (hfsem : IsShuffleFin
     leftDeriv α a f = leftDeriv α a (shuffleEval α k fs p) := by rw [← hfp]
     _ = shuffleEval α k fs (derivationExt q p) := by rw [leftDeriv_shuffleEval_deriv k fs a q hq p]
 
-/-- The left derivative of a shuffle-finite series is shuffle-finite (by the coincidence,
-    from the semantic closure). -/
-private theorem leftDeriv_shuffleFinite (f : Series α) (hf : IsShuffleFinite α f) (a : α) :
-    IsShuffleFinite α (leftDeriv α a f) := by
-  have hfsem : IsShuffleFiniteSem α f := (ShuffleCoincidence f).mp hf
-  have hld : IsShuffleFiniteSem α (leftDeriv α a f) := leftDeriv_shuffleFiniteSem f hfsem a
-  exact (ShuffleCoincidence (leftDeriv α a f)).mpr hld
-
-/-- `A.recognised` is shuffle-finite (by definition). -/
+/-- `A.recognised` is shuffle-finite (by the coincidence, from recognisability). -/
 private theorem recognised_shuffleFinite (A : ShuffleAutomaton α) :
-    IsShuffleFinite α A.recognised := ⟨A, rfl⟩
+    IsShuffleFinite α A.recognised :=
+  shuffleFinite_of_recognisable _ ⟨A, rfl⟩
 
 /-- The top prevariety: the whole space of series, trivially closed under the
     derivatives.  Serves as the `prevariety` field of the shuffle effective
@@ -3235,25 +3205,29 @@ private theorem zeroAutomaton_recognised :
       rw [h, Mword_zero (zeroAutomaton α) w']
       simp
 
-/-- The sum of two recognised series is shuffle-finite. -/
+/-- The sum of two recognised series is shuffle-recognisable. -/
 private theorem addRecognisable (A B : ShuffleAutomaton α) :
-    IsShuffleFinite α (A.recognised + B.recognised) :=
-  ShuffleClosure.1 _ _ (recognised_shuffleFinite A) (recognised_shuffleFinite B)
+    IsShuffleRecognisable α (A.recognised + B.recognised) :=
+  (ShuffleCoincidence _).mp
+    (ShuffleClosure.1 _ _ (recognised_shuffleFinite A) (recognised_shuffleFinite B))
 
-/-- The scalar multiple of a recognised series is shuffle-finite. -/
+/-- The scalar multiple of a recognised series is shuffle-recognisable. -/
 private theorem smulRecognisable (c : ℚ) (A : ShuffleAutomaton α) :
-    IsShuffleFinite α (c • A.recognised) :=
-  ShuffleClosure.2.1 _ _ (recognised_shuffleFinite A)
+    IsShuffleRecognisable α (c • A.recognised) :=
+  (ShuffleCoincidence _).mp
+    (ShuffleClosure.2.1 _ _ (recognised_shuffleFinite A))
 
-/-- The left derivative of a recognised series is shuffle-finite. -/
+/-- The left derivative of a recognised series is shuffle-recognisable. -/
 private theorem derivLRecognisable (a : α) (A : ShuffleAutomaton α) :
-    IsShuffleFinite α (leftDeriv α a A.recognised) :=
-  leftDeriv_shuffleFinite _ (recognised_shuffleFinite A) a
+    IsShuffleRecognisable α (leftDeriv α a A.recognised) :=
+  (ShuffleCoincidence _).mp
+    (leftDeriv_shuffleFiniteSem _ (recognised_shuffleFinite A) a)
 
-/-- The right derivative of a recognised series is shuffle-finite. -/
+/-- The right derivative of a recognised series is shuffle-recognisable. -/
 private theorem derivRRecognisable (a : α) (A : ShuffleAutomaton α) :
-    IsShuffleFinite α (rightDeriv α a A.recognised) :=
-  ShuffleClosure.2.2.2 _ _ (recognised_shuffleFinite A)
+    IsShuffleRecognisable α (rightDeriv α a A.recognised) :=
+  (ShuffleCoincidence _).mp
+    (ShuffleClosure.2.2.2 _ _ (recognised_shuffleFinite A))
 
 /-- The sum automaton: recognises `A.recognised + B.recognised`. -/
 noncomputable def addAutomaton (A B : ShuffleAutomaton α) : ShuffleAutomaton α :=
@@ -3352,8 +3326,8 @@ theorem ShuffleEffectivePrevariety [Fintype α] :
     ∃ P : EffectivePrevariety α, ∀ f, IsShuffleFinite α f ↔ ∃ r : P.Rep, P.sem r = f := by
   refine ⟨shuffleEffectivePrevariety, ?_⟩
   intro f
-  dsimp [shuffleEffectivePrevariety, IsShuffleFinite]
-  exact Iff.rfl
+  dsimp [shuffleEffectivePrevariety, IsShuffleRecognisable]
+  exact ShuffleCoincidence f
 
 /--
 ---

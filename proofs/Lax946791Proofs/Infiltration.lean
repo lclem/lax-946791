@@ -69,11 +69,6 @@ variable {α : Type*}
 
 /-! ### The infiltration product is a commutative ring multiplication -/
 
-/-- The unit of the infiltration product: the delta series, `1` on the empty word and
-    `0` elsewhere.  Unlike the constant-`1` series (the unit of the pointwise product),
-    the delta series is the unit of the *infiltration* product. -/
-def infiltrationUnit (α : Type*) : Series α := fun w => if w = [] then 1 else 0
-
 /-- The left derivative is `ℚ`-linear: it preserves addition. -/
 private theorem leftDeriv_add (a : α) (f g : Series α) :
     leftDeriv α a (f + g) = leftDeriv α a f + leftDeriv α a g := by
@@ -655,14 +650,6 @@ private theorem sem_infiltration (A : InfiltrationAutomaton α)
 
 /-! ### The infiltration-algebra evaluation (the semantic working definition) -/
 
-/-- The `n`-fold iterated infiltration power of `f`: `infiltrationPow α f 0 = infiltrationUnit α`
-    (the infiltration unit) and `infiltrationPow α f (n+1) = f ↑ infiltrationPow α f n`.  This is
-    the infiltration analogue of the shuffle `shufflePow`. -/
-noncomputable def infiltrationPow (α : Type*) (f : Series α) (n : ℕ) : Series α :=
-  match n with
-  | 0 => infiltrationUnit α
-  | n + 1 => infiltration α f (infiltrationPow α f n)
-
 /-- `infiltrationPow α f 0 = infiltrationUnit α`. -/
 private theorem infiltrationPow_zero (f : Series α) : infiltrationPow α f 0 = infiltrationUnit α := rfl
 
@@ -690,13 +677,27 @@ private theorem infiltrationPow_one (f : Series α) : infiltrationPow α f 1 = f
 instance : Std.Commutative (infiltration α) := ⟨infiltration_comm⟩
 instance : Std.Associative (infiltration α) := ⟨infiltration_assoc⟩
 
-/-- The infiltration product of the iterated infiltration powers
-    `fs 0 ↑^[d 0] ⋯ fs (k-1) ↑^[d (k-1)]`, where `↑` is the infiltration product and `↑^[n]` is
-    the iterated infiltration power (`infiltrationPow`).  This is the `Finset.fold` of the
-    commutative-associative infiltration operation over all indices (the zero-exponent terms
-    contribute the infiltration unit). -/
-noncomputable def infiltrationProd (α : Type*) (k : ℕ) (fs : Fin k → Series α) (d : Fin k →₀ ℕ) : Series α :=
-  (Finset.univ : Finset (Fin k)).fold (infiltration α) (infiltrationUnit α) (fun i => infiltrationPow α (fs i) (d i))
+/-- The concept package's `infiltrationProd` (a typeclass-free right-fold over the index list)
+    equals the `Finset.fold` of the infiltration product over all indices: both compute the
+    infiltration product of the iterated powers `fs i ↑^[d i]`, and the infiltration product is
+    commutative and associative, so the result is independent of the order of the factors. -/
+theorem infiltrationProd_eq_fold (k : ℕ) (fs : Fin k → Series α) (d : Fin k →₀ ℕ) :
+    infiltrationProd α k fs d =
+      (Finset.univ : Finset (Fin k)).fold (infiltration α) (infiltrationUnit α) (fun i => infiltrationPow α (fs i) (d i)) := by
+  unfold infiltrationProd
+  -- The LHS folds with `fun x acc => infiltration α x acc`, eta-equivalent to `infiltration α`
+  -- (the latter is the term carrying the `Std.Commutative`/`Std.Associative` instances, which
+  -- `Multiset.coe_fold_r` requires).
+  change List.foldr (infiltration α) (infiltrationUnit α) (List.map (fun i => infiltrationPow α (fs i) (d i)) Finset.univ.toList) =
+      (Finset.univ : Finset (Fin k)).fold (infiltration α) (infiltrationUnit α) (fun i => infiltrationPow α (fs i) (d i))
+  -- Both sides fold the infiltration product over the image of `Finset.univ` under
+  -- `i ↦ infiltrationPow (fs i) (d i)`: the LHS is the `List.foldr` over the list representative
+  -- (`Multiset.coe_fold_r`), the RHS the `Finset.fold`; the multiset being folded is the same in
+  -- both (`Finset.coe_toList`, `Multiset.map_coe`).  The rewrite brings the LHS to a `Multiset.fold`;
+  -- unfolding the RHS `Finset.fold` (whose definition is a `Multiset.fold`) makes the two sides
+  -- identical, closing the goal.
+  rw [← Multiset.coe_fold_r, ← Multiset.map_coe, Finset.coe_toList]
+  dsimp only [Finset.fold]
 
 /-- `infiltrationProd α k fs 0 = infiltrationUnit α`. -/
 private theorem infiltrationProd_zero (k : ℕ) (fs : Fin k → Series α) :
@@ -710,7 +711,7 @@ private theorem infiltrationProd_zero (k : ℕ) (fs : Fin k → Series α) :
     · intro a s h ih
       rw [Finset.fold_insert h, ih]
       simp [infiltration_unit_left]
-  rw [infiltrationProd]
+  rw [infiltrationProd_eq_fold]
   have hLHS : (Finset.univ : Finset (Fin k)).fold (infiltration α) (infiltrationUnit α)
       (fun i => infiltrationPow α (fs i) ((0 : Fin k →₀ ℕ) i)) =
       (Finset.univ : Finset (Fin k)).fold (infiltration α) (infiltrationUnit α) (fun _ => infiltrationUnit α) := by
@@ -751,13 +752,13 @@ private theorem infiltrationProd_X (k : ℕ) (fs : Fin k → Series α) (i : Fin
       · have hne : i ≠ a := by
           intro h; exact ha h.symm
         simp [ha, hne, infiltration_unit_left, Finset.mem_insert]
-  rw [infiltrationProd]
+  rw [infiltrationProd_eq_fold]
   simp [this, Finset.mem_univ]
 
 /-- `infiltrationProd α k fs (m + n) = infiltrationProd α k fs m ↑ infiltrationProd α k fs n`. -/
 private theorem infiltrationProd_add (k : ℕ) (fs : Fin k → Series α) (m n : Fin k →₀ ℕ) :
     infiltrationProd α k fs (m + n) = infiltration α (infiltrationProd α k fs m) (infiltrationProd α k fs n) := by
-  rw [infiltrationProd, infiltrationProd, infiltrationProd]
+  rw [infiltrationProd_eq_fold, infiltrationProd_eq_fold, infiltrationProd_eq_fold]
   have hsplit : ∀ i, infiltrationPow α (fs i) (m i + n i) =
       infiltration α (infiltrationPow α (fs i) (m i)) (infiltrationPow α (fs i) (n i)) := by
     intro i; rw [infiltrationPow_add]
@@ -806,12 +807,6 @@ private theorem infiltrationProd_add (k : ℕ) (fs : Fin k → Series α) (m n :
         rw [Finset.fold_insert h, Finset.fold_insert h, Finset.fold_insert h, ← ih]
         exact hkey _ _ _ _
   rw [hLHS, hdist Finset.univ]
-
-/-- The evaluation of the polynomial `p` in the *infiltration* algebra, sending `X_i` to `fs i`:
-    `infiltrationEval α k fs p = ∑ d ∈ p.support, p.coeff d · (fs 0 ↑^[d 0] ⋯ fs (k-1) ↑^[d (k-1)])`. -/
-noncomputable def infiltrationEval (α : Type*) (k : ℕ) (fs : Fin k → Series α)
-    (p : MvPolynomial (Fin k) ℚ) : Series α :=
-  p.support.sum fun m => p.coeff m • infiltrationProd α k fs m
 
 /-! ### `infiltrationEval` is a homomorphism for the infiltration algebra -/
 
@@ -998,14 +993,7 @@ private theorem infiltrationEval_mul (k : ℕ) (fs : Fin k → Series α)
           simp [Finset.sum_product]
   rw [hLHS, hRHS]
 
-/-- A series is *infiltration-finite* in the semantic sense (the paper's working definition, §7):
-    it is an infiltration polynomial in a finite tuple `fs` of series that is closed under the
-    left derivatives.  This is the infiltration analogue of `IsShuffleFiniteSem`. -/
-def IsInfiltrationFiniteSem (α : Type*) (f : Series α) : Prop :=
-  ∃ k, ∃ fs : Fin k → Series α, ∃ p : MvPolynomial (Fin k) ℚ,
-    f = infiltrationEval α k fs p ∧ ∀ a i, ∃ q, leftDeriv α a (fs i) = infiltrationEval α k fs q
-
-/-! ### The coincidence: infiltration-finite ↔ infiltration-finite-sem -/
+/-! ### The coincidence: infiltration-finite ↔ infiltration-recognisable -/
 
 /-! The semantics agrees with the infiltration-algebra evaluation: `A.sem p =
     infiltrationEval α A.dim (fun i => A.sem (X i)) p` for all `p`.  Both sides are
@@ -1075,7 +1063,7 @@ private theorem sem_prod (A : InfiltrationAutomaton α) (m : Fin A.dim →₀ �
 private theorem infiltrationProd_support (k : ℕ) (fs : Fin k → Series α) (m : Fin k →₀ ℕ) :
     infiltrationProd α k fs m =
       (m.support).fold (infiltration α) (infiltrationUnit α) (fun i => infiltrationPow α (fs i) (m i)) := by
-  dsimp [infiltrationProd]
+  rw [infiltrationProd_eq_fold]
   have hfold : ∀ (s : Finset (Fin k)),
       s.fold (infiltration α) (infiltrationUnit α) (fun i => infiltrationPow α (fs i) (m i)) =
         (m.support ∩ s).fold (infiltration α) (infiltrationUnit α) (fun i => infiltrationPow α (fs i) (m i)) := by
@@ -1433,7 +1421,7 @@ private theorem fold_infiltration_unit_const (k : ℕ) (s : Finset (Fin k)) :
     non-unit factor of the product is the `i`-th one (all other exponents are zero). -/
 private theorem infiltrationProd_single (k : ℕ) (fs : Fin k → Series α) (i : Fin k) (n : ℕ) :
     infiltrationProd α k fs (Finsupp.single i n) = infiltrationPow α (fs i) n := by
-  rw [infiltrationProd]
+  rw [infiltrationProd_eq_fold]
   have hsplit : (Finset.univ : Finset (Fin k)) = insert i ((Finset.univ : Finset (Fin k)) \ {i}) := by
     ext j
     simp [Finset.mem_sdiff, Finset.mem_univ, Finset.mem_insert]
@@ -1625,7 +1613,7 @@ private theorem infiltrationProd_nil (k : ℕ) (fs : Fin k → Series α) (m : F
     | insert x s hx ih =>
         simp [infiltration, Finset.fold_insert hx, infiltrationRec_nil, infiltrationPow_nil, ih,
             Finset.prod_insert hx]
-  rw [infiltrationProd]
+  rw [infiltrationProd_eq_fold]
   simpa using this Finset.univ
 
 /-! ### `infiltrationEval` and the general infiltration `Δ_q = S_q − id` -/
@@ -1849,8 +1837,8 @@ private theorem leftDeriv_infiltrationEval_infiltration (k : ℕ) (fs : Fin k �
     "finite implies finite-sem" direction of the coincidence).  The witnessing tuple is the
     generator series `A.sem (X_i)`, closed under left derivatives by the derivation property
     `sem_deriv`; `f` is the infiltration polynomial `X_0` in that tuple. -/
-private theorem infiltrationFiniteSem_of_finite (f : Series α)
-    (hfin : IsInfiltrationFinite α f) : IsInfiltrationFiniteSem α f := by
+private theorem infiltrationFinite_of_recognisable (f : Series α)
+    (hfin : IsInfiltrationRecognisable α f) : IsInfiltrationFinite α f := by
   obtain ⟨A, hA⟩ := hfin
   let X0 : MvPolynomial (Fin A.dim) ℚ := MvPolynomial.X (Fin.mk 0 A.hdim)
   let fs := fun i => A.sem (MvPolynomial.X i)
@@ -1872,8 +1860,8 @@ private theorem infiltrationFiniteSem_of_finite (f : Series α)
     to `g = extTuple f k fs` (so `g 0 = f` and `g (Fin.succ i) = fs i`), show `g` is closed
     under left derivatives (the `g 0` slot via `leftDeriv_infiltrationEval_infiltration`, the
     `fs i` slots by the closure of `fs`), and build the automaton from the closure. -/
-private theorem infiltrationFinite_of_finiteSem (f : Series α)
-    (hsem : IsInfiltrationFiniteSem α f) : IsInfiltrationFinite α f := by
+private theorem infiltrationRecognisable_of_finite (f : Series α)
+    (hsem : IsInfiltrationFinite α f) : IsInfiltrationRecognisable α f := by
   obtain ⟨k, fs, p, hf, hclose⟩ := hsem
   let g := extTuple f k fs
   have hclose_g : ∀ (a : α) (j : Fin (k+1)),
@@ -1983,19 +1971,22 @@ private theorem infiltrationFinite_of_finiteSem (f : Series α)
     exact hg0
   exact ⟨A, hrec⟩
 
-/-- The infiltration coincidence theorem (paper §7): a series is infiltration-finite
-    (recognised by an infiltration automaton) if and only if it is an infiltration polynomial
-    in a finite tuple of series closed under the left derivatives.  The "finite implies
-    finite-sem" direction reads off the generator tuple `A.sem (X_i)`; the "finite-sem implies
-    finite" direction extends the witnessing tuple by the series itself and builds the
-    automaton from the closure under left derivatives. -/
-private theorem InfiltrationCoincidence (f : Series α) :
-    IsInfiltrationFinite α f ↔ IsInfiltrationFiniteSem α f := by
+/--
+conclusion: Lax946791.Infiltration.InfiltrationCoincidence
+---
+The infiltration coincidence theorem (paper §7): a series is infiltration-finite (an
+infiltration polynomial in a finite tuple of series closed under the left derivatives) if
+and only if it is recognised by an infiltration automaton.  The "finite implies recognisable"
+direction extends the witnessing tuple by the series itself and builds the automaton from the
+closure under left derivatives; the "recognisable implies finite" direction reads off the
+generator tuple `A.sem (X_i)`, closed under left derivatives by the derivation property. -/
+theorem InfiltrationCoincidence (f : Series α) :
+    IsInfiltrationFinite α f ↔ IsInfiltrationRecognisable α f := by
   constructor
   · intro hfin
-    exact infiltrationFiniteSem_of_finite f hfin
-  · intro hsem
-    exact infiltrationFinite_of_finiteSem f hsem
+    exact infiltrationRecognisable_of_finite f hfin
+  · intro hrec
+    exact infiltrationFinite_of_recognisable f hrec
 
 /-! ### The closure: combining witnessing tuples -/
 
@@ -2257,7 +2248,7 @@ private theorem infiltrationProd_rightDeriv (k : ℕ) (fs : Fin k → Series α)
         have hprod := infiltrationRightDerivProd q P a
         simp [Finset.fold_insert hx]
         rw [hprod, hqaug, hPaug]
-  dsimp [infiltrationProd]
+  simp only [infiltrationProd_eq_fold]
   exact hfold (Finset.univ : Finset (Fin k))
 
 /-! ### Right derivative of the evaluation (semantic level) -/
@@ -2415,8 +2406,8 @@ is `ℚ`-linear but not a ring homomorphism, so the right derivative cannot be r
 automaton with the same transitions (unlike the Hadamard case); instead the witnessing tuple is
 extended to the "augmented" tuple `(fs, fun i => fs i + rightDeriv a (fs i))`, and the right
 derivative of the evaluation is the evaluation of `embedBack p − embedFront p` in the extended
-tuple.  The class is stated in terms of the automaton definition `IsInfiltrationFinite`; all
-four parts are lifted through the coincidence.
+tuple.  The class is stated in terms of the semantic definition `IsInfiltrationFinite`; the proof
+proceeds at the semantic level, working directly with the witnessing tuples.
 -/
 theorem InfiltrationClosure :
     (∀ (f g : Series α), IsInfiltrationFinite α f → IsInfiltrationFinite α g → IsInfiltrationFinite α (f + g)) ∧
@@ -2426,11 +2417,9 @@ theorem InfiltrationClosure :
   constructor
   · -- Addition
     intro f g hf hg
-    have hfsem : IsInfiltrationFiniteSem α f := (InfiltrationCoincidence f).mp hf
-    have hgsem : IsInfiltrationFiniteSem α g := (InfiltrationCoincidence g).mp hg
-    obtain ⟨k, fs, p, hfp, hfc⟩ := hfsem
-    obtain ⟨k', fs', p', hgp', hfc'⟩ := hgsem
-    have hsum : IsInfiltrationFiniteSem α (f + g) :=
+    obtain ⟨k, fs, p, hfp, hfc⟩ := hf
+    obtain ⟨k', fs', p', hgp', hfc'⟩ := hg
+    have hsum : IsInfiltrationFinite α (f + g) :=
       ⟨k + k', combineTuple k k' fs fs', embedFront k k' p + embedBack k k' p',
         by calc
           f + g = infiltrationEval α k fs p + infiltrationEval α k' fs' p' := by rw [← hfp, ← hgp']
@@ -2444,27 +2433,24 @@ theorem InfiltrationClosure :
               (embedFront k k' p + embedBack k k' p') := by
             rw [← infiltrationEval_add]
         , combineTuple_closed k k' fs fs' hfc hfc'⟩
-    exact (InfiltrationCoincidence (f + g)).mpr hsum
+    exact hsum
   · constructor
     · -- Scalar multiplication
       intro c f hf
-      have hfsem : IsInfiltrationFiniteSem α f := (InfiltrationCoincidence f).mp hf
-      obtain ⟨k, fs, p, hfp, hfc⟩ := hfsem
-      have hsmul : IsInfiltrationFiniteSem α (c • f) :=
+      obtain ⟨k, fs, p, hfp, hfc⟩ := hf
+      have hsmul : IsInfiltrationFinite α (c • f) :=
         ⟨k, fs, c • p,
           by calc
             c • f = c • infiltrationEval α k fs p := by rw [← hfp]
             _ = infiltrationEval α k fs (c • p) := by rw [← infiltrationEval_smul]
           , hfc⟩
-      exact (InfiltrationCoincidence (c • f)).mpr hsmul
+      exact hsmul
     · constructor
       · -- Infiltration product
         intro f g hf hg
-        have hfsem : IsInfiltrationFiniteSem α f := (InfiltrationCoincidence f).mp hf
-        have hgsem : IsInfiltrationFiniteSem α g := (InfiltrationCoincidence g).mp hg
-        obtain ⟨k, fs, p, hfp, hfc⟩ := hfsem
-        obtain ⟨k', fs', p', hgp', hfc'⟩ := hgsem
-        have hmul : IsInfiltrationFiniteSem α (infiltration α f g) :=
+        obtain ⟨k, fs, p, hfp, hfc⟩ := hf
+        obtain ⟨k', fs', p', hgp', hfc'⟩ := hg
+        have hmul : IsInfiltrationFinite α (infiltration α f g) :=
           ⟨k + k', combineTuple k k' fs fs', embedFront k k' p * embedBack k k' p',
             by calc
               infiltration α f g =
@@ -2482,21 +2468,20 @@ theorem InfiltrationClosure :
                   (embedFront k k' p * embedBack k k' p') := by
                 rw [← infiltrationEval_mul]
             , combineTuple_closed k k' fs fs' hfc hfc'⟩
-        exact (InfiltrationCoincidence (infiltration α f g)).mpr hmul
+        exact hmul
       · -- Right derivative (semantic level, via the extended "augmented" tuple)
         intro a f hf
-        have hfsem : IsInfiltrationFiniteSem α f := (InfiltrationCoincidence f).mp hf
-        obtain ⟨k, fs, p, hfp, hfc⟩ := hfsem
+        obtain ⟨k, fs, p, hfp, hfc⟩ := hf
         let fs' := fun i : Fin k => fs i + rightDeriv α a (fs i)
         let FS := combineTuple k k fs fs'
-        have hrd : IsInfiltrationFiniteSem α (rightDeriv α a f) :=
+        have hrd : IsInfiltrationFinite α (rightDeriv α a f) :=
           ⟨k + k, FS, infiltrationRightDerivPoly k fs a p,
             by calc
               rightDeriv α a f = rightDeriv α a (infiltrationEval α k fs p) := by rw [← hfp]
               _ = infiltrationEval α (k + k) FS (infiltrationRightDerivPoly k fs a p) := by
                 rw [infiltrationRightDerivEval_ext k fs a p]
             , combineTuple_add_rightDeriv_closed k fs a hfc⟩
-        exact (InfiltrationCoincidence (rightDeriv α a f)).mpr hrd
+        exact hrd
 
 /-! ### The ideal chain: orbit ideals and their stabilisation -/
 
@@ -2965,7 +2950,7 @@ private theorem infiltrationEval_lift (k k' : ℕ) (FS : Fin k → Series α) (f
     `k`, the generator tuple `fs`, the polynomial `p`, and the proofs that
     `f = infiltrationEval k fs p` and that `fs` is closed under left derivatives.  Packaged as a
     `Type` (not a `Prop`) so that `Classical.choose` can produce one witness per letter from a
-    `∀ a, IsInfiltrationFiniteSem …`. -/
+    `∀ a, IsInfiltrationFinite …`. -/
 structure InfiltrationWitnessData (α : Type*) (f : Series α) where
   k : ℕ
   fs : Fin k → Series α
@@ -2973,9 +2958,9 @@ structure InfiltrationWitnessData (α : Type*) (f : Series α) where
   hfin : f = infiltrationEval α k fs p
   hclose : ∀ a i, ∃ q, leftDeriv α a (fs i) = infiltrationEval α k fs q
 
-/-- `IsInfiltrationFiniteSem α f` is the same as the existence of an `InfiltrationWitnessData`. -/
+/-- `IsInfiltrationFinite α f` is the same as the existence of an `InfiltrationWitnessData`. -/
 private theorem InfiltrationWitnessData_iff (f : Series α) :
-    IsInfiltrationFiniteSem α f ↔ ∃ _ : InfiltrationWitnessData α f, True := by
+    IsInfiltrationFinite α f ↔ ∃ _ : InfiltrationWitnessData α f, True := by
   constructor
   · intro h
     obtain ⟨k, fs, p, hfp, hfc⟩ := h
@@ -2995,17 +2980,15 @@ the concatenation of the witnessing tuples of the `f a`'s: `g` is trivially an i
 polynomial in a tuple containing it (its own variable), and the tuple is closed under left
 derivatives because `leftDeriv a g = f a` is an infiltration polynomial in the (closed)
 witnessing tuple for `f a`, and each `f a`'s witnessing tuple is itself closed.  The finiteness
-of the alphabet is what makes the combined tuple finite.  The proof proceeds at the semantic
-level (infiltration polynomials in a tuple closed under left derivatives) and converts via the
-coincidence.
+of the alphabet is what makes the combined tuple finite.  The proof proceeds entirely at the
+semantic level (infiltration polynomials in a tuple closed under left derivatives).
 -/
 theorem InfiltrationAntiDerivativeClosure [Fintype α]
     (g : Series α) (f : α → Series α) (hantideriv : IsLeftAntiDerivative α g f)
     (hf : ∀ a, IsInfiltrationFinite α (f a)) : IsInfiltrationFinite α g := by
-  have hfsem : ∀ a, IsInfiltrationFiniteSem α (f a) := fun a => (InfiltrationCoincidence (f a)).mp (hf a)
-  have hsem_g : IsInfiltrationFiniteSem α g := by
+  have hsem_g : IsInfiltrationFinite α g := by
     let W : (a : α) → InfiltrationWitnessData α (f a) :=
-      fun a => Classical.choose ((InfiltrationWitnessData_iff (f a)).mp (hfsem a))
+      fun a => Classical.choose ((InfiltrationWitnessData_iff (f a)).mp (hf a))
     -- The non-`g` slots: one per element of each `W a .fs`, indexed by the pair `(a, j)`.
     let nonGslots : Finset (α × ℕ) :=
       Finset.biUnion Finset.univ (fun a => (Finset.range ((W a).k)).image (fun j => (a, j)))
@@ -3166,7 +3149,7 @@ theorem InfiltrationAntiDerivativeClosure [Fintype α]
         exact infiltrationEval_lift (1 + M) (W b).k FS (W b).fs
           (fun j' : Fin (W b).k => slot_of b j'.val j'.isLt) hassign q'
     exact ⟨1 + M, FS, MvPolynomial.X ⟨0, by omega⟩, hfin_g, hclose_FS⟩
-  exact (InfiltrationCoincidence g).mpr hsem_g
+  exact hsem_g
 
 /-! ### The effective prevariety of infiltration-finite series -/
 
@@ -3185,8 +3168,8 @@ private theorem Mword_zero (A : InfiltrationAutomaton α) (w : List α) : A.Mwor
     `leftDeriv_shuffleFiniteSem`, where the letter map is a *derivation*; here the letter
     endomorphism `S_a` is only `ℚ`-linear, so the left derivative is read off by the general
     infiltration `Δ_q = S_q − id`.) -/
-private theorem leftDeriv_infiltrationFiniteSem (f : Series α) (hfsem : IsInfiltrationFiniteSem α f) (a : α) :
-    IsInfiltrationFiniteSem α (leftDeriv α a f) := by
+private theorem leftDeriv_infiltrationFiniteSem (f : Series α) (hfsem : IsInfiltrationFinite α f) (a : α) :
+    IsInfiltrationFinite α (leftDeriv α a f) := by
   obtain ⟨k, fs, p, hfp, hfc⟩ := hfsem
   let q : Fin k → MvPolynomial (Fin k) ℚ := fun i => Classical.choose (hfc a i)
   have hq : ∀ i, leftDeriv α a (fs i) = infiltrationEval α k fs (q i) := by
@@ -3198,17 +3181,10 @@ private theorem leftDeriv_infiltrationFiniteSem (f : Series α) (hfsem : IsInfil
     leftDeriv α a f = leftDeriv α a (infiltrationEval α k fs p) := by rw [← hfp]
     _ = infiltrationEval α k fs (infiltrationExtGen k q p) := by rw [leftDeriv_infiltrationEval_infiltration k fs a q hq p]
 
-/-- The left derivative of an infiltration-finite series is infiltration-finite (by the
-    coincidence, from the semantic closure). -/
-private theorem leftDeriv_infiltrationFinite (f : Series α) (hf : IsInfiltrationFinite α f) (a : α) :
-    IsInfiltrationFinite α (leftDeriv α a f) := by
-  have hfsem : IsInfiltrationFiniteSem α f := (InfiltrationCoincidence f).mp hf
-  have hld : IsInfiltrationFiniteSem α (leftDeriv α a f) := leftDeriv_infiltrationFiniteSem f hfsem a
-  exact (InfiltrationCoincidence (leftDeriv α a f)).mpr hld
-
-/-- `A.recognised` is infiltration-finite (by definition). -/
+/-- `A.recognised` is infiltration-finite (by the coincidence, from recognisability). -/
 private theorem recognised_infiltrationFinite (A : InfiltrationAutomaton α) :
-    IsInfiltrationFinite α A.recognised := ⟨A, rfl⟩
+    IsInfiltrationFinite α A.recognised :=
+  infiltrationFinite_of_recognisable _ ⟨A, rfl⟩
 
 /-- The top prevariety: the whole space of series, trivially closed under the
     derivatives.  Serves as the `prevariety` field of the infiltration effective
@@ -3249,25 +3225,29 @@ private theorem zeroAutomaton_recognised :
       rw [h, Mword_zero (zeroAutomaton α) w']
       simp
 
-/-- The sum of two recognised series is infiltration-finite. -/
+/-- The sum of two recognised series is infiltration-recognisable. -/
 private theorem addRecognisable (A B : InfiltrationAutomaton α) :
-    IsInfiltrationFinite α (A.recognised + B.recognised) :=
-  InfiltrationClosure.1 _ _ (recognised_infiltrationFinite A) (recognised_infiltrationFinite B)
+    IsInfiltrationRecognisable α (A.recognised + B.recognised) :=
+  (InfiltrationCoincidence _).mp
+    (InfiltrationClosure.1 _ _ (recognised_infiltrationFinite A) (recognised_infiltrationFinite B))
 
-/-- The scalar multiple of a recognised series is infiltration-finite. -/
+/-- The scalar multiple of a recognised series is infiltration-recognisable. -/
 private theorem smulRecognisable (c : ℚ) (A : InfiltrationAutomaton α) :
-    IsInfiltrationFinite α (c • A.recognised) :=
-  InfiltrationClosure.2.1 _ _ (recognised_infiltrationFinite A)
+    IsInfiltrationRecognisable α (c • A.recognised) :=
+  (InfiltrationCoincidence _).mp
+    (InfiltrationClosure.2.1 _ _ (recognised_infiltrationFinite A))
 
-/-- The left derivative of a recognised series is infiltration-finite. -/
+/-- The left derivative of a recognised series is infiltration-recognisable. -/
 private theorem derivLRecognisable (a : α) (A : InfiltrationAutomaton α) :
-    IsInfiltrationFinite α (leftDeriv α a A.recognised) :=
-  leftDeriv_infiltrationFinite _ (recognised_infiltrationFinite A) a
+    IsInfiltrationRecognisable α (leftDeriv α a A.recognised) :=
+  (InfiltrationCoincidence _).mp
+    (leftDeriv_infiltrationFiniteSem _ (recognised_infiltrationFinite A) a)
 
-/-- The right derivative of a recognised series is infiltration-finite. -/
+/-- The right derivative of a recognised series is infiltration-recognisable. -/
 private theorem derivRRecognisable (a : α) (A : InfiltrationAutomaton α) :
-    IsInfiltrationFinite α (rightDeriv α a A.recognised) :=
-  InfiltrationClosure.2.2.2 _ _ (recognised_infiltrationFinite A)
+    IsInfiltrationRecognisable α (rightDeriv α a A.recognised) :=
+  (InfiltrationCoincidence _).mp
+    (InfiltrationClosure.2.2.2 _ _ (recognised_infiltrationFinite A))
 
 /-- The sum automaton: recognises `A.recognised + B.recognised`. -/
 noncomputable def addAutomaton (A B : InfiltrationAutomaton α) : InfiltrationAutomaton α :=
@@ -3366,8 +3346,8 @@ theorem InfiltrationEffectivePrevariety [Fintype α] :
     ∃ P : EffectivePrevariety α, ∀ f, IsInfiltrationFinite α f ↔ ∃ r : P.Rep, P.sem r = f := by
   refine ⟨infiltrationEffectivePrevariety, ?_⟩
   intro f
-  dsimp [infiltrationEffectivePrevariety, IsInfiltrationFinite]
-  exact Iff.rfl
+  dsimp [infiltrationEffectivePrevariety, IsInfiltrationRecognisable]
+  exact InfiltrationCoincidence f
 
 /--
 ---
