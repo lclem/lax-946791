@@ -13,7 +13,8 @@
 \input{macros}
 
 % for making Nguy\~{\^{e}}n work with biber..v.
-\DeclareUnicodeCharacter{1EC5}{\~{\^{e}}}
+% (pdflatex only; under lualatex Linux Libertine O has the glyph natively)
+\ifdefined\DeclareUnicodeCharacter\DeclareUnicodeCharacter{1EC5}{\~{\^{e}}}\fi
 
 \addbibresource{master.bib} 
 \addbibresource{books.bib}

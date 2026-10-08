@@ -5,9 +5,15 @@
 % \DeclareMathVersion{normal2}
 
 % \usepackage{ebgaramond}
+\ifluatex
+% lualatex: acmart already loads fontspec/unicode-math and sets Linux Libertine O
+% (TU encoding); the pdflatex font packages below would override that, and
+% inputenc is a no-op, leaving \DeclareUnicodeCharacter undefined.
+\else
 \usepackage[T1]{fontenc}
 \usepackage[utf8x]{inputenc}
 \usepackage{type1ec}
+\fi
 % \usepackage{fontspec}
 \usepackage{stmaryrd}
 \usepackage{amsmath}
@@ -46,19 +52,19 @@
 \usepackage{verbatim}
 
 \usepackage[contents={}]{background}
-\newcommand\BGfrom[1]{%
-\AddEverypageHook{%
-  \ifnum\value{page}>\numexpr#1-1\relax
-    \backgroundsetup{
-      contents={Over the limit},
-      color=red,
-      scale=10,
-      opacity=0.5
-    }%
-  \fi
-  \BgMaterial%
-  }%
-}
+% \newcommand\BGfrom[1]{%
+% \AddEverypageHook{%
+%   \ifnum\value{page}>\numexpr#1-1\relax
+%     \backgroundsetup{
+%       contents={Over the limit},
+%       color=red,
+%       scale=10,
+%       opacity=0.5
+%     }%
+%   \fi
+%   \BgMaterial%
+%   }%
+% }
 % adds a red background for pages after the limit
 % \BGfrom{7}
 
