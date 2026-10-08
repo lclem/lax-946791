@@ -4,16 +4,15 @@
 \newcommand\bmmax{0}
 % \DeclareMathVersion{normal2}
 
-% \usepackage{ebgaramond}
-\ifluatex
-% lualatex: acmart already loads fontspec/unicode-math and sets Linux Libertine O
-% (TU encoding); the pdflatex font packages below would override that, and
-% inputenc is a no-op, leaving \DeclareUnicodeCharacter undefined.
-\else
+% \ifluatex
+% % lualatex: acmart already loads fontspec/unicode-math and sets Linux Libertine O
+% % (TU encoding); the pdflatex font packages below would override that, and
+% % inputenc is a no-op, leaving \DeclareUnicodeCharacter undefined.
+% \else
 \usepackage[T1]{fontenc}
-\usepackage[utf8x]{inputenc}
+\usepackage[utf8]{inputenc}
 \usepackage{type1ec}
-\fi
+% \fi
 % \usepackage{fontspec}
 \usepackage{stmaryrd}
 \usepackage{amsmath}
