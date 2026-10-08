@@ -9,7 +9,7 @@ scratch/
 paper/comment.cut
 paper/*.log
 paper/*.aux
-paper/*.bbl
+#paper/*.bbl
 paper/*.bcf
 paper/*.blg
 paper/*.fdb_latexmk
