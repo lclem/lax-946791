@@ -1,6 +1,6 @@
-import Lax946791.Series
-import Lax946791.Prevariety
-import Lax946791.Commutativity
+import Lax619925.Series
+import Lax619925.Prevariety
+import Lax619925.Commutativity
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Basic
@@ -22,9 +22,9 @@ commutativity problem is decidable for it (paper §4).  This is the fully closed
 chain in the proof network: no open leaf is involved.
 -/
 
-namespace Lax946791.Recognisable
+namespace Lax619925.Recognisable
 
-open Lax946791.Series Lax946791.Prevariety Lax946791.Commutativity
+open Lax619925.Series Lax619925.Prevariety Lax619925.Commutativity
 
 /-- A linear representation over `α`: a dimension `k`, a row vector `init` of
     initial weights, a column vector `final` of final weights, and a transition
@@ -115,4 +115,4 @@ axiom RecognisableEffectivePrevariety (α : Type*) [Fintype α] :
 axiom RecognisableCommutativityDecidable (α : Type*) [Fintype α] :
   ∃ d : LinearRepresentation α → Bool, ∀ r, d r = true ↔ IsCommutative α (r.sem)
 
-end Lax946791.Recognisable
+end Lax619925.Recognisable

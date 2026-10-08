@@ -1,14 +1,14 @@
-import Lax946791.Series
+import Lax619925.Series
 import Mathlib.Data.List.Basic
 import Mathlib.Data.Real.Basic
 
-namespace Lax946791Proofs.Series
+namespace Lax619925Proofs.Series
 
-open Lax946791.Series
+open Lax619925.Series
 
 /--
 ---
-conclusion: Lax946791.Series.LeftRightDerivativesCommute
+conclusion: Lax619925.Series.LeftRightDerivativesCommute
 ---
 Both compositions send a series `f` to the series `w ↦ f (a :: w ++ [b])`:
 the left derivative reads the coefficient of `a · w`, and the right derivative
@@ -21,7 +21,7 @@ theorem LeftRightDerivativesCommute (α : Type*) (a b : α) :
 
 /--
 ---
-conclusion: Lax946791.Series.ReversalInvolution
+conclusion: Lax619925.Series.ReversalInvolution
 ---
 Reversing a word twice gives the word back, so reversing a series twice is the
 identity.
@@ -32,7 +32,7 @@ theorem ReversalInvolution (α : Type*) (f : Series α) : reversal α (reversal 
 
 /--
 ---
-conclusion: Lax946791.Series.ReversalSwapsDerivatives
+conclusion: Lax619925.Series.ReversalSwapsDerivatives
 ---
 Reversal interchanges the left and right derivatives: the coefficient of
 `a · w` in `f`, read off `reversal f`, is the coefficient of `w · a`, and
@@ -43,4 +43,4 @@ theorem ReversalSwapsDerivatives (α : Type*) (a : α) (f : Series α) :
   funext w
   simp [reversal, leftDeriv, rightDeriv, List.reverse_append]
 
-end Lax946791Proofs.Series
+end Lax619925Proofs.Series

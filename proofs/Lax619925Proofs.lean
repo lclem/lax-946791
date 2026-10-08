@@ -1,0 +1,9 @@
+import Lax619925Proofs.Series
+import Lax619925Proofs.Commutativity
+import Lax619925Proofs.Recognisable
+import Lax619925Proofs.Hadamard
+import Lax619925Proofs.Shuffle
+import Lax619925Proofs.Infiltration
+import Lax619925Proofs.PolynomialAutomata
+import Lax619925Proofs.Polyrec
+import Lax619925Proofs.CDA

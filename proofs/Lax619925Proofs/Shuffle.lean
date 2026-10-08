@@ -1,8 +1,8 @@
-import Lax946791.Shuffle
-import Lax946791.Series
-import Lax946791.Prevariety
-import Lax946791.Commutativity
-import Lax946791.IdealMembership
+import Lax619925.Shuffle
+import Lax619925.Series
+import Lax619925.Prevariety
+import Lax619925.Commutativity
+import Lax619925.IdealMembership
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Basic
@@ -36,7 +36,7 @@ set_option linter.style.haveILetI false
 title: Shuffle automata: closure, equality, and commutativity decidability
 type: theorem
 ---
-Proves the five statements of the `Lax946791.Shuffle` concept: the shuffle-finite
+Proves the five statements of the `Lax619925.Shuffle` concept: the shuffle-finite
 series are closed under addition, scalar multiplication, the shuffle product, and
 right derivatives (the closure lemma); over a finite alphabet they are closed under
 left anti-derivatives; they form an effective prevariety; the equality (zeroness)
@@ -55,10 +55,10 @@ product), which is what makes the shuffle-finite series closed under the shuffle
 product.
 -/
 
-namespace Lax946791Proofs.Shuffle
+namespace Lax619925Proofs.Shuffle
 
-open Lax946791.Series Lax946791.Prevariety Lax946791.Commutativity Lax946791.Shuffle
-open Lax946791.IdealMembership
+open Lax619925.Series Lax619925.Prevariety Lax619925.Commutativity Lax619925.Shuffle
+open Lax619925.IdealMembership
 open MvPolynomial
 open Classical
 
@@ -691,7 +691,7 @@ private theorem shuffleProd_add (k : ℕ) (fs : Fin k → Series α) (m n : Fin 
 /-! ### `shuffleEval` is a homomorphism for the shuffle algebra -/
 
 -- `shuffleEval` (the shuffle-algebra evaluation) is defined in the concept package
--- (`Lax946791.Shuffle.shuffleEval`); the theorems below are about that definition.
+-- (`Lax619925.Shuffle.shuffleEval`); the theorems below are about that definition.
 
 /-- `shuffleEval α k fs 0 = 0`. -/
 private theorem shuffleEval_zero (k : ℕ) (fs : Fin k → Series α) :
@@ -893,7 +893,7 @@ private theorem shuffleEval_mul (k : ℕ) (fs : Fin k → Series α)
 
 -- `IsShuffleFinite` (the semantic working definition, paper §6) and
 -- `IsShuffleRecognisable` (recognised by a shuffle automaton) are both defined in the
--- concept package (`Lax946791.Shuffle`); the coincidence `ShuffleCoincidence` (below)
+-- concept package (`Lax619925.Shuffle`); the coincidence `ShuffleCoincidence` (below)
 -- proves they coincide.
 
 /-! ### The coincidence: shuffle-finite ↔ shuffle-recognisable -/
@@ -2087,7 +2087,7 @@ private theorem shuffleRecognisable_of_finite (f : Series α)
   exact ⟨A, hrec⟩
 
 /--
-conclusion: Lax946791.Shuffle.ShuffleCoincidence
+conclusion: Lax619925.Shuffle.ShuffleCoincidence
 ---
 The shuffle coincidence theorem (paper §6): a series is shuffle-finite (a shuffle
 polynomial in a finite tuple of series closed under the left derivatives) if and only
@@ -2442,7 +2442,7 @@ private theorem shuffleFiniteClosure :
             rw [hcomm, hq, rightDeriv_shuffleEval]
 
 /--
-conclusion: Lax946791.Shuffle.ShuffleClosure
+conclusion: Lax619925.Shuffle.ShuffleClosure
 ---
 The shuffle closure theorem (paper §6): the shuffle-finite series are closed under
 addition, scalar multiplication, the shuffle product, and right derivatives.  The proof
@@ -2535,7 +2535,7 @@ private theorem ShuffleWitnessData_iff (f : Series α) :
 
 /--
 ---
-conclusion: Lax946791.Shuffle.ShuffleAntiDerivativeClosure
+conclusion: Lax619925.Shuffle.ShuffleAntiDerivativeClosure
 ---
 The shuffle anti-derivative closure (paper §6): over a finite alphabet, if `g` is a left
 anti-derivative of a tuple `f` of shuffle-finite series (`leftDeriv a g = f a` for all `a`),
@@ -3087,7 +3087,7 @@ private theorem orbitDec_iff (A : ShuffleAutomaton α) (p : MvPolynomial (Fin A.
 
 /--
 ---
-conclusion: Lax946791.Shuffle.ShuffleEqualityDecidable
+conclusion: Lax619925.Shuffle.ShuffleEqualityDecidable
 ---
 The equality (zeroness) problem is decidable for shuffle automata over a finite
 alphabet (paper §6).  As in the Hadamard case, the orbit-ideal chain `I_n`
@@ -3315,7 +3315,7 @@ noncomputable def shuffleEffectivePrevariety [Fintype α] : EffectivePrevariety 
 
 /--
 ---
-conclusion: Lax946791.Shuffle.ShuffleEffectivePrevariety
+conclusion: Lax619925.Shuffle.ShuffleEffectivePrevariety
 ---
 The shuffle-finite series form an effective prevariety over a finite alphabet
 (paper §6, theorem): the effective prevariety `shuffleEffectivePrevariety` has
@@ -3331,7 +3331,7 @@ theorem ShuffleEffectivePrevariety [Fintype α] :
 
 /--
 ---
-conclusion: Lax946791.Shuffle.ShuffleCommutativityDecidable
+conclusion: Lax619925.Shuffle.ShuffleCommutativityDecidable
 ---
 The commutativity problem is decidable for shuffle-finite series over a finite
 alphabet (paper §6).  This is the meta-theorem
@@ -3350,4 +3350,4 @@ theorem ShuffleCommutativityDecidable [Fintype α] :
     dsimp only [shuffleEffectivePrevariety]
   simpa [hsem] using hd A
 
-end Lax946791Proofs.Shuffle
+end Lax619925Proofs.Shuffle

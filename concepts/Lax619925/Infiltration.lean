@@ -1,6 +1,6 @@
-import Lax946791.Series
-import Lax946791.Prevariety
-import Lax946791.Commutativity
+import Lax619925.Series
+import Lax619925.Prevariety
+import Lax619925.Commutativity
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Basic
@@ -29,9 +29,9 @@ ideal membership in the configuration polynomial ring (the open leaf), via the s
 ideal-chain argument as for the Hadamard and shuffle automata.
 -/
 
-namespace Lax946791.Infiltration
+namespace Lax619925.Infiltration
 
-open Lax946791.Series Lax946791.Prevariety Lax946791.Commutativity
+open Lax619925.Series Lax619925.Prevariety Lax619925.Commutativity
 
 /-- The recursive core of the infiltration product, defined by primitive recursion on
     the word: `(f ↑ g) ε = f ε · g ε` and
@@ -195,4 +195,4 @@ axiom InfiltrationEqualityDecidable (α : Type*) [Fintype α] :
 axiom InfiltrationCommutativityDecidable (α : Type*) [Fintype α] :
   ∃ d : InfiltrationAutomaton α → Bool, ∀ A, d A = true ↔ IsCommutative α (A.recognised)
 
-end Lax946791.Infiltration
+end Lax619925.Infiltration

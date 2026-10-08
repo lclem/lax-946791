@@ -1,5 +1,5 @@
-import Lax946791.Series
-import Lax946791.Hadamard
+import Lax619925.Series
+import Lax619925.Hadamard
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Basic
@@ -22,9 +22,9 @@ duality swaps the configuration and the final weight, and the reversal accounts
 for the order in which the transitions are composed.
 -/
 
-namespace Lax946791.PolynomialAutomata
+namespace Lax619925.PolynomialAutomata
 
-open Lax946791.Series Lax946791.Hadamard
+open Lax619925.Series Lax619925.Hadamard
 
 /-- A *polynomial automaton* over `α`: a dimension `k ≥ 1`, an initial
     configuration `qI : ℚ^k`, a final polynomial `F : ℚ[X_1, …, X_k]`, and a
@@ -76,4 +76,4 @@ def IsPolynomialRecognisable (α : Type*) (f : Series α) : Prop :=
 axiom PolynomialHadamardEquivalence (α : Type*) (f : Series α) :
   IsPolynomialRecognisable α f ↔ IsHadamardRecognisable α (reversal α f)
 
-end Lax946791.PolynomialAutomata
+end Lax619925.PolynomialAutomata

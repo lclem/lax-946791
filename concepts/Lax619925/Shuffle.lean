@@ -1,6 +1,6 @@
-import Lax946791.Series
-import Lax946791.Prevariety
-import Lax946791.Commutativity
+import Lax619925.Series
+import Lax619925.Prevariety
+import Lax619925.Commutativity
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Basic
@@ -27,9 +27,9 @@ open leaf), via the same ideal-chain argument as for the Hadamard and
 infiltration automata.
 -/
 
-namespace Lax946791.Shuffle
+namespace Lax619925.Shuffle
 
-open Lax946791.Series Lax946791.Prevariety Lax946791.Commutativity
+open Lax619925.Series Lax619925.Prevariety Lax619925.Commutativity
 
 /-- The recursive core of the shuffle product, defined by primitive recursion on the
     word: `(f ⧢ g) ε = f ε · g ε` and
@@ -194,4 +194,4 @@ axiom ShuffleEqualityDecidable (α : Type*) [Fintype α] :
 axiom ShuffleCommutativityDecidable (α : Type*) [Fintype α] :
   ∃ d : ShuffleAutomaton α → Bool, ∀ A, d A = true ↔ IsCommutative α (A.recognised)
 
-end Lax946791.Shuffle
+end Lax619925.Shuffle

@@ -1,6 +1,6 @@
-import Lax946791.PolynomialAutomata
-import Lax946791.Hadamard
-import Lax946791.Series
+import Lax619925.PolynomialAutomata
+import Lax619925.Hadamard
+import Lax619925.Series
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.List.Basic
 import Mathlib.Data.Fin.Basic
@@ -19,9 +19,9 @@ derivatives; the "if" direction rebuilds a polynomial automaton from a
 left-derivative-closed Hadamard algebra, by induction on the word.
 -/
 
-namespace Lax946791Proofs.PolynomialAutomata
+namespace Lax619925Proofs.PolynomialAutomata
 
-open Lax946791.PolynomialAutomata Lax946791.Hadamard Lax946791.Series
+open Lax619925.PolynomialAutomata Lax619925.Hadamard Lax619925.Series
 
 variable {α : Type*}
 
@@ -89,10 +89,10 @@ private theorem constPolynomialRecognisable (c : ℚ) :
 
 /--
 ---
-conclusion: Lax946791.PolynomialAutomata.PolynomialHadamardEquivalence
+conclusion: Lax619925.PolynomialAutomata.PolynomialHadamardEquivalence
 assumptions:
-  - Lax946791.Hadamard.HadamardCoincidence
-  - Lax946791.Series.ReversalInvolution
+  - Lax619925.Hadamard.HadamardCoincidence
+  - Lax619925.Series.ReversalInvolution
 ---
 A series is recognisable by a polynomial automaton iff its reversal is
 Hadamard-finite (paper appendix).  Only-if: the component series
@@ -208,4 +208,4 @@ theorem PolynomialHadamardEquivalence (f : Series α) :
         dsimp [B, PolynomialAutomaton.recognised, PolynomialAutomaton.sem]
       exact ⟨B, hsem.symm⟩
 
-end Lax946791Proofs.PolynomialAutomata
+end Lax619925Proofs.PolynomialAutomata

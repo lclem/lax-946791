@@ -19,7 +19,7 @@ theorem) reduces the equality problem for the Hadamard, shuffle, and infiltratio
 automata to exactly this leaf.
 -/
 
-namespace Lax946791.IdealMembership
+namespace Lax619925.IdealMembership
 
 /-- Ideal membership in the multivariate polynomial ring over `ℚ` is decidable:
     given a finite set of generators and a polynomial, one can decide whether the
@@ -29,4 +29,4 @@ axiom IdealMembershipDecidable (k : ℕ)
     (gens : Finset (MvPolynomial (Fin k) ℚ)) (p : MvPolynomial (Fin k) ℚ) :
   Decidable (p ∈ Ideal.span ↑gens)
 
-end Lax946791.IdealMembership
+end Lax619925.IdealMembership

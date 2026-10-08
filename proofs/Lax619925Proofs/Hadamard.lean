@@ -1,8 +1,8 @@
-import Lax946791.Hadamard
-import Lax946791.Series
-import Lax946791.Prevariety
-import Lax946791.Commutativity
-import Lax946791.IdealMembership
+import Lax619925.Hadamard
+import Lax619925.Series
+import Lax619925.Prevariety
+import Lax619925.Commutativity
+import Lax619925.IdealMembership
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Basic
@@ -27,10 +27,10 @@ import Mathlib.Tactic
 -- `let` would drop that instance, so the linter is disabled here.
 set_option linter.style.haveILetI false
 
-namespace Lax946791Proofs.Hadamard
+namespace Lax619925Proofs.Hadamard
 
-open Lax946791.Series Lax946791.Prevariety Lax946791.Commutativity Lax946791.Hadamard
-open Lax946791.IdealMembership
+open Lax619925.Series Lax619925.Prevariety Lax619925.Commutativity Lax619925.Hadamard
+open Lax619925.IdealMembership
 open MvPolynomial
 open Classical
 
@@ -101,12 +101,6 @@ private theorem Mword_mul (A : HadamardAutomaton α) (w : List α)
   rw [← MwordAlg_apply A w p, ← MwordAlg_apply A w q, ← MwordAlg_apply A w (p * q)]
   exact (MwordAlg A w).map_mul p q
 
-/-- `Mword A w` commutes with scalar multiplication. -/
-private theorem Mword_smul (A : HadamardAutomaton α) (w : List α) (c : ℚ)
-    (p : MvPolynomial (Fin A.dim) ℚ) : A.Mword w (c • p) = c • A.Mword w p := by
-  rw [← MwordAlg_apply A w p, ← MwordAlg_apply A w (c • p)]
-  simp
-
 /-! ### Semantics properties -/
 
 /-- The semantics is `ℚ`-linear: `A.sem (p + q) = A.sem p + A.sem q`. -/
@@ -115,14 +109,6 @@ private theorem sem_add (A : HadamardAutomaton α) (p q : MvPolynomial (Fin A.di
   funext w
   dsimp [HadamardAutomaton.sem]
   rw [Mword_add, eval_add]
-
-/-- The semantics commutes with scalar multiplication: `A.sem (c • p) = c • A.sem p`. -/
-private theorem sem_smul (A : HadamardAutomaton α) (c : ℚ) (p : MvPolynomial (Fin A.dim) ℚ) :
-    A.sem (c • p) = c • A.sem p := by
-  funext w
-  dsimp [HadamardAutomaton.sem]
-  rw [Mword_smul, ← aeval_eq_eval]
-  simp
 
 /-- The semantics is a ring homomorphism on the configuration space:
     `A.sem (p * q) = A.sem p * A.sem q` (the Hadamard product of the two recognised
@@ -422,7 +408,7 @@ private theorem recognisable_of_finite (f : Series α)
 
 /--
 ---
-conclusion: Lax946791.Hadamard.HadamardCoincidence
+conclusion: Lax619925.Hadamard.HadamardCoincidence
 ---
 The Hadamard coincidence theorem (paper §5): a series is Hadamard-finite if and
 only if it is Hadamard-recognisable.  The "recognisable implies finite" direction
@@ -557,7 +543,7 @@ private theorem rightDeriv_recognised (A : HadamardAutomaton α) (a : α) :
 
 /--
 ---
-conclusion: Lax946791.Hadamard.HadamardClosure
+conclusion: Lax619925.Hadamard.HadamardClosure
 ---
 The Hadamard closure theorem (paper §5): the Hadamard-finite series are closed under
 addition, scalar multiplication, the Hadamard product, and right derivatives.  Addition,
@@ -653,7 +639,7 @@ private theorem HadamardWitnessData_iff (f : Series α) :
 
 /--
 ---
-conclusion: Lax946791.Hadamard.HadamardAntiDerivativeClosure
+conclusion: Lax619925.Hadamard.HadamardAntiDerivativeClosure
 ---
 The Hadamard anti-derivative closure (paper §5): over a finite alphabet, if `g` is a left
 anti-derivative of a tuple `f` of Hadamard-finite series (`leftDeriv a g = f a` for all `a`),
@@ -1164,7 +1150,7 @@ private theorem orbitDec_iff (A : HadamardAutomaton α) (p : MvPolynomial (Fin A
 
 /--
 ---
-conclusion: Lax946791.Hadamard.HadamardEqualityDecidable
+conclusion: Lax619925.Hadamard.HadamardEqualityDecidable
 ---
 The equality (zeroness) problem is decidable for Hadamard automata over a finite
 alphabet (paper §5).  The orbit-ideal chain `I_n` stabilises by Hilbert's basis
@@ -1368,7 +1354,7 @@ noncomputable def hadamardEffectivePrevariety [Fintype α] : EffectivePrevariety
 
 /--
 ---
-conclusion: Lax946791.Hadamard.HadamardEffectivePrevariety
+conclusion: Lax619925.Hadamard.HadamardEffectivePrevariety
 ---
 The Hadamard-finite series form an effective prevariety over a finite alphabet
 (paper §5, theorem): the effective prevariety `hadamardEffectivePrevariety` has
@@ -1384,7 +1370,7 @@ theorem HadamardEffectivePrevariety [Fintype α] :
 
 /--
 ---
-conclusion: Lax946791.Hadamard.HadamardCommutativityDecidable
+conclusion: Lax619925.Hadamard.HadamardCommutativityDecidable
 ---
 The commutativity problem is decidable for Hadamard-finite series over a finite
 alphabet (paper §5).  This is the meta-theorem
@@ -1403,4 +1389,4 @@ theorem HadamardCommutativityDecidable [Fintype α] :
     dsimp only [hadamardEffectivePrevariety]
   simpa [hsem] using hd A
 
-end Lax946791Proofs.Hadamard
+end Lax619925Proofs.Hadamard

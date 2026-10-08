@@ -1,5 +1,5 @@
-import Lax946791.Series
-import Lax946791.Shuffle
+import Lax619925.Series
+import Lax619925.Shuffle
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Basic
@@ -25,9 +25,9 @@ the `d`-letter alphabet, so a solution exists exactly when the companion shuffle
 series are commutative, which is decidable.
 -/
 
-namespace Lax946791.CDA
+namespace Lax619925.CDA
 
-open Lax946791.Series Lax946791.Shuffle
+open Lax619925.Series Lax619925.Shuffle
 
 /-- An exponential multivariate power series in `d` variables, identified with
     its coefficient sequence (the series is `Σ_n f_n x^n / n!`). -/
@@ -85,4 +85,4 @@ axiom CDASolvability (d k : ℕ) (hd : 0 < d) (hk : 0 < k) :
   ∃ dec : (Fin k → Fin d → MvPolynomial (Fin k) ℚ) → (Fin k → ℚ) → Bool,
     ∀ p c, dec p c = true ↔ ∃ f : Fin k → ExpPowerSeries d, SolvesCDA d k f p c
 
-end Lax946791.CDA
+end Lax619925.CDA

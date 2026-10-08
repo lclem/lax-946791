@@ -1,5 +1,5 @@
-import Lax946791.Series
-import Lax946791.Prevariety
+import Lax619925.Series
+import Lax619925.Prevariety
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fintype.Basic
 
@@ -17,9 +17,9 @@ a series `g` over a two-letter-enlarged alphabet, supported on words beginning
 with the two fresh letters, such that `g` is commutative exactly when `f = 0`.
 -/
 
-namespace Lax946791.Commutativity
+namespace Lax619925.Commutativity
 
-open Lax946791.Series Lax946791.Prevariety
+open Lax619925.Series Lax619925.Prevariety
 
 /-- The *swap* equation: for all letters `a, b`,
     `leftDeriv a (leftDeriv b f) = leftDeriv b (leftDeriv a f)`.
@@ -101,4 +101,4 @@ axiom EffectivePrevarietyCommutativityDecidable (α : Type*) [Fintype α]
 axiom AntiDerivativeCommutativeIffZero (α : Type*) (f : Series α) :
   IsCommutative (Fresh2 α) (antiDerivativeSeries α f) ↔ f = 0
 
-end Lax946791.Commutativity
+end Lax619925.Commutativity

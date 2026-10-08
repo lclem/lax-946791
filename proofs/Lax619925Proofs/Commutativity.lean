@@ -1,6 +1,6 @@
-import Lax946791.Commutativity
-import Lax946791.Series
-import Lax946791.Prevariety
+import Lax619925.Commutativity
+import Lax619925.Series
+import Lax619925.Prevariety
 import Mathlib.Data.List.Basic
 import Mathlib.Data.List.Rotate
 import Mathlib.Data.Multiset.Basic
@@ -10,9 +10,9 @@ import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
 
-namespace Lax946791Proofs.Commutativity
+namespace Lax619925Proofs.Commutativity
 
-open Lax946791.Commutativity Lax946791.Series Lax946791.Prevariety
+open Lax619925.Commutativity Lax619925.Series Lax619925.Prevariety
 open List
 
 variable (α : Type*)
@@ -325,7 +325,7 @@ private theorem sameMultisetReachable {u v : List α}
 
 /--
 ---
-conclusion: Lax946791.Commutativity.FiniteAxiomatisation
+conclusion: Lax619925.Commutativity.FiniteAxiomatisation
 ---
 The characterisation of commutativity (paper §3, lemma `commutativity`): a series is
 commutative if and only if it satisfies the swap and the rotate equations.  The forward
@@ -388,7 +388,7 @@ private theorem foldAndTrueIff (s : Finset α) (f : α → Bool) :
 
 /--
 ---
-conclusion: Lax946791.Commutativity.EffectivePrevarietyCommutativityDecidable
+conclusion: Lax619925.Commutativity.EffectivePrevarietyCommutativityDecidable
 ---
 The commutativity problem is decidable for effective prevarieties (paper §3, the
 meta-theorem).  By the finite axiomatisation, `sem r` is commutative exactly when it
@@ -497,7 +497,7 @@ private theorem antiDerivZero (w : List (Fresh2 α)) :
 
 /--
 ---
-conclusion: Lax946791.Commutativity.AntiDerivativeCommutativeIffZero
+conclusion: Lax619925.Commutativity.AntiDerivativeCommutativeIffZero
 ---
 The paper's reduction of the equality problem to commutativity.  `g` is supported only
 on words beginning `fresh0 · fresh1`, where `g (fresh0 · fresh1 · w) = f w`.  If `g` is

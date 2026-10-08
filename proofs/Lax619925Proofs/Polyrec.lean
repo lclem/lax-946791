@@ -1,7 +1,7 @@
-import Lax946791.Polyrec
-import Lax946791.Hadamard
-import Lax946791.Series
-import Lax946791Proofs.Hadamard
+import Lax619925.Polyrec
+import Lax619925.Hadamard
+import Lax619925.Series
+import Lax619925Proofs.Hadamard
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Basic
@@ -31,10 +31,10 @@ Its semantics `g_i = ⟦A⟧_{X_i}` is the unique solution of the companion syst
 the initial condition extends to a polyrec solution iff all `g_i` are commutative.
 -/
 
-namespace Lax946791Proofs.Polyrec
+namespace Lax619925Proofs.Polyrec
 
-open Lax946791.Polyrec Lax946791.Hadamard Lax946791.Series
-open Lax946791Proofs.Hadamard
+open Lax619925.Polyrec Lax619925.Hadamard Lax619925.Series
+open Lax619925Proofs.Hadamard
 open MvPolynomial
 
 /-! ### The Parikh-image isomorphism -/
@@ -47,11 +47,11 @@ noncomputable def wordFromParikh (d : ℕ) (n : Fin d → ℕ) : List (Fin d) :=
 
 /-- Lift a sequence to a (necessarily commutative) series: the coefficient of the
     word `w` is the sequence value at the Parikh image of `w`. -/
-def toSeries (d : ℕ) (f : Lax946791.Polyrec.Seq d) : Series (Fin d) := fun w => f (parikh (Fin d) w)
+def toSeries (d : ℕ) (f : Lax619925.Polyrec.Seq d) : Series (Fin d) := fun w => f (parikh (Fin d) w)
 
 /-- Project a (commutative) series to a sequence: the value at the multi-index `n`
     is the series value at a word with Parikh image `n`. -/
-noncomputable def toSeq (d : ℕ) (g : Series (Fin d)) : Lax946791.Polyrec.Seq d := fun n => g (wordFromParikh d n)
+noncomputable def toSeq (d : ℕ) (g : Series (Fin d)) : Lax619925.Polyrec.Seq d := fun n => g (wordFromParikh d n)
 
 /-- `wordFromParikh` has the intended Parikh image: `parikh (wordFromParikh n) = n`. -/
 private theorem wordFromParikh_parikh (d : ℕ) (n : Fin d → ℕ) :
@@ -79,7 +79,7 @@ private theorem parikh_cons (d : ℕ) (j : Fin d) (w : List (Fin d)) :
   · simp [h, Ne.symm h]
 
 /-- Lifting then projecting is the identity on sequences. -/
-private theorem toSeq_toSeries (d : ℕ) (f : Lax946791.Polyrec.Seq d) : toSeq d (toSeries d f) = f := by
+private theorem toSeq_toSeries (d : ℕ) (f : Lax619925.Polyrec.Seq d) : toSeq d (toSeries d f) = f := by
   funext n
   dsimp [toSeq, toSeries]
   rw [wordFromParikh_parikh]
@@ -100,7 +100,7 @@ private theorem toSeries_toSeq (d : ℕ) (g : Series (Fin d)) (hg : IsCommutativ
 
 /-- The lift of a shift is the left derivative of the lift:
     `toSeries (shift_j f) = leftDeriv a_j (toSeries f)`. -/
-private theorem toSeries_shift (d : ℕ) (j : Fin d) (f : Lax946791.Polyrec.Seq d) :
+private theorem toSeries_shift (d : ℕ) (j : Fin d) (f : Lax619925.Polyrec.Seq d) :
     toSeries d (shift d j f) = leftDeriv (Fin d) j (toSeries d f) := by
   funext w
   dsimp [toSeries, shift, leftDeriv]
@@ -109,14 +109,14 @@ private theorem toSeries_shift (d : ℕ) (j : Fin d) (f : Lax946791.Polyrec.Seq 
 
 /-- The lift of the pointwise (Hadamard-algebra) evaluation is the Hadamard-algebra
     evaluation of the lifts. -/
-private theorem toSeries_evalSeq (d k : ℕ) (fs : Fin k → Lax946791.Polyrec.Seq d) (p : MvPolynomial (Fin k) ℚ) :
+private theorem toSeries_evalSeq (d k : ℕ) (fs : Fin k → Lax619925.Polyrec.Seq d) (p : MvPolynomial (Fin k) ℚ) :
     toSeries d (evalSeq d k fs p) = hadamardEval (Fin d) k (fun i => toSeries d (fs i)) p := by
   funext w
   simp [toSeries, evalSeq, hadamardEval]
 
 /-- The lift of a sequence is a commutative series (it is constant on words with the
     same Parikh image). -/
-private theorem toSeries_commutative (d : ℕ) (f : Lax946791.Polyrec.Seq d) : IsCommutative (Fin d) (toSeries d f) := by
+private theorem toSeries_commutative (d : ℕ) (f : Lax619925.Polyrec.Seq d) : IsCommutative (Fin d) (toSeries d f) := by
   intro u v hce
   dsimp [IsCommutative, toSeries]
   have hpar : parikh (Fin d) u = parikh (Fin d) v := by
@@ -202,7 +202,7 @@ private theorem companion_unique (d k : ℕ)
     automaton's component series are all commutative. -/
 private theorem bridge (d k : ℕ) (hd : 0 < d) (hk : 0 < k)
     (p : Fin k → Fin d → MvPolynomial (Fin k) ℚ) (c : Fin k → ℚ) :
-    (∃ f : Fin k → Lax946791.Polyrec.Seq d, SolvesPolyrec d k f p c) ↔
+    (∃ f : Fin k → Lax619925.Polyrec.Seq d, SolvesPolyrec d k f p c) ↔
       ∀ i, IsCommutative (Fin d) ((companionAutomaton d k hd hk p c).sem (X i)) := by
   let A := companionAutomaton d k hd hk p c
   constructor
@@ -301,10 +301,10 @@ private theorem companionComponent_spec (α : Type*) (A : HadamardAutomaton α) 
 
 /--
 ---
-conclusion: Lax946791.Polyrec.PolyrecConsistency
+conclusion: Lax619925.Polyrec.PolyrecConsistency
 assumptions:
-  - Lax946791.Hadamard.HadamardCommutativityDecidable
-  - Lax946791.Hadamard.HadamardCoincidence
+  - Lax619925.Hadamard.HadamardCommutativityDecidable
+  - Lax619925.Hadamard.HadamardCoincidence
 ---
 The polyrec consistency problem is decidable (paper §5.4): the decision reduces to
 checking that all components of the companion Hadamard automaton's recognised series
@@ -313,7 +313,7 @@ applied to the effective prevariety of Hadamard-finite series).
 -/
 theorem PolyrecConsistency (d k : ℕ) (hd : 0 < d) (hk : 0 < k) :
     ∃ dec : (Fin k → Fin d → MvPolynomial (Fin k) ℚ) → (Fin k → ℚ) → Bool,
-      ∀ p c, dec p c = true ↔ ∃ f : Fin k → Lax946791.Polyrec.Seq d, SolvesPolyrec d k f p c := by
+      ∀ p c, dec p c = true ↔ ∃ f : Fin k → Lax619925.Polyrec.Seq d, SolvesPolyrec d k f p c := by
   obtain ⟨dcomm, hdcomm⟩ := HadamardCommutativityDecidable (Fin d)
   let dec : (Fin k → Fin d → MvPolynomial (Fin k) ℚ) → (Fin k → ℚ) → Bool :=
     fun p c => decide (∀ i, dcomm (companionComponent (Fin d) (companionAutomaton d k hd hk p c) i) = true)
@@ -333,10 +333,10 @@ theorem PolyrecConsistency (d k : ℕ) (hd : 0 < d) (hk : 0 < k) :
       rw [companionComponent_spec (Fin d) A i] at this
       exact this.mpr (h i)
   have hbridge : (∀ i, IsCommutative (Fin d) (A.sem (X i))) ↔
-      ∃ f : Fin k → Lax946791.Polyrec.Seq d, SolvesPolyrec d k f p c :=
+      ∃ f : Fin k → Lax619925.Polyrec.Seq d, SolvesPolyrec d k f p c :=
     (bridge d k hd hk p c).symm
   calc
     dec p c = true ↔ ∀ i, IsCommutative (Fin d) (A.sem (X i)) := hdec
-    _ ↔ ∃ f : Fin k → Lax946791.Polyrec.Seq d, SolvesPolyrec d k f p c := hbridge
+    _ ↔ ∃ f : Fin k → Lax619925.Polyrec.Seq d, SolvesPolyrec d k f p c := hbridge
 
-end Lax946791Proofs.Polyrec
+end Lax619925Proofs.Polyrec

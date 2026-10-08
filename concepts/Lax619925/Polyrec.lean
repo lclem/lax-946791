@@ -1,5 +1,5 @@
-import Lax946791.Series
-import Lax946791.Hadamard
+import Lax619925.Series
+import Lax619925.Hadamard
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Basic
@@ -22,9 +22,9 @@ Hadamard system over the `d`-letter alphabet, so a solution exists exactly when
 the companion Hadamard series are commutative, which is decidable.
 -/
 
-namespace Lax946791.Polyrec
+namespace Lax619925.Polyrec
 
-open Lax946791.Series Lax946791.Hadamard
+open Lax619925.Series Lax619925.Hadamard
 
 /-- A multivariate sequence in `d` variables: a function `ℕ^d → ℚ`, represented
     as a function on the multi-index type `Fin d → ℕ`. -/
@@ -61,4 +61,4 @@ axiom PolyrecConsistency (d k : ℕ) (hd : 0 < d) (hk : 0 < k) :
   ∃ dec : (Fin k → Fin d → MvPolynomial (Fin k) ℚ) → (Fin k → ℚ) → Bool,
     ∀ p c, dec p c = true ↔ ∃ f : Fin k → Seq d, SolvesPolyrec d k f p c
 
-end Lax946791.Polyrec
+end Lax619925.Polyrec

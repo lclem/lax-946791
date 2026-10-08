@@ -1,6 +1,6 @@
-import Lax946791.Series
-import Lax946791.Prevariety
-import Lax946791.Commutativity
+import Lax619925.Series
+import Lax619925.Prevariety
+import Lax619925.Commutativity
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Basic
@@ -26,9 +26,9 @@ commutativity problem are decidable for them; the equality decision reduces to
 ideal membership in the configuration polynomial ring (the open leaf).
 -/
 
-namespace Lax946791.Hadamard
+namespace Lax619925.Hadamard
 
-open Lax946791.Series Lax946791.Prevariety Lax946791.Commutativity
+open Lax619925.Series Lax619925.Prevariety Lax619925.Commutativity
 
 /-- The Hadamard product of two series, defined element-wise:
     `(hadamard f g) w = f w * g w`.  It is the pointwise product of the
@@ -137,4 +137,4 @@ axiom HadamardEqualityDecidable (α : Type*) [Fintype α] :
 axiom HadamardCommutativityDecidable (α : Type*) [Fintype α] :
   ∃ d : HadamardAutomaton α → Bool, ∀ A, d A = true ↔ IsCommutative α (A.recognised)
 
-end Lax946791.Hadamard
+end Lax619925.Hadamard

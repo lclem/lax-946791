@@ -1,4 +1,4 @@
-import Lax946791.Series
+import Lax619925.Series
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.Module.Basic
 import Mathlib.Algebra.Module.Pi
@@ -20,9 +20,9 @@ problem is decidable (paper §2.3, conditions (1)–(3)).  These are definitions
 only; the decidability results built on them live in the `Commutativity` module.
 -/
 
-namespace Lax946791.Prevariety
+namespace Lax619925.Prevariety
 
-open Lax946791.Series
+open Lax619925.Series
 
 -- the type and the module carrying it have the same name on purpose
 set_option linter.dupNamespace false in
@@ -65,4 +65,4 @@ structure EffectivePrevariety (α : Type u) where
   sem_derivR : ∀ a r, sem (derivR a r) = rightDeriv α a (sem r)
   decEq : ∀ r s, Decidable (sem r = sem s)
 
-end Lax946791.Prevariety
+end Lax619925.Prevariety

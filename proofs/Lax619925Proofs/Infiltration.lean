@@ -1,8 +1,8 @@
-import Lax946791.Infiltration
-import Lax946791.Series
-import Lax946791.Prevariety
-import Lax946791.Commutativity
-import Lax946791.IdealMembership
+import Lax619925.Infiltration
+import Lax619925.Series
+import Lax619925.Prevariety
+import Lax619925.Commutativity
+import Lax619925.IdealMembership
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Basic
@@ -34,7 +34,7 @@ set_option linter.style.haveILetI false
 title: Infiltration automata: closure, equality, and commutativity decidability
 type: theorem
 ---
-Proves the five statements of the `Lax946791.Infiltration` concept: the
+Proves the five statements of the `Lax619925.Infiltration` concept: the
 infiltration-finite series are closed under addition, scalar multiplication, the
 infiltration product, and right derivatives (the closure lemma); over a finite
 alphabet they are closed under left anti-derivatives; they form an effective
@@ -58,10 +58,10 @@ for the *infiltration* product (not the pointwise product), which is what makes 
 infiltration-finite series closed under the infiltration product.
 -/
 
-namespace Lax946791Proofs.Infiltration
+namespace Lax619925Proofs.Infiltration
 
-open Lax946791.Series Lax946791.Prevariety Lax946791.Commutativity Lax946791.Infiltration
-open Lax946791.IdealMembership
+open Lax619925.Series Lax619925.Prevariety Lax619925.Commutativity Lax619925.Infiltration
+open Lax619925.IdealMembership
 open MvPolynomial
 open Classical
 
@@ -1972,7 +1972,7 @@ private theorem infiltrationRecognisable_of_finite (f : Series α)
   exact ⟨A, hrec⟩
 
 /--
-conclusion: Lax946791.Infiltration.InfiltrationCoincidence
+conclusion: Lax619925.Infiltration.InfiltrationCoincidence
 ---
 The infiltration coincidence theorem (paper §7): a series is infiltration-finite (an
 infiltration polynomial in a finite tuple of series closed under the left derivatives) if
@@ -2393,7 +2393,7 @@ private theorem combineTuple_add_rightDeriv_closed (k : ℕ) (fs : Fin k → Ser
 
 /--
 ---
-conclusion: Lax946791.Infiltration.InfiltrationClosure
+conclusion: Lax619925.Infiltration.InfiltrationClosure
 ---
 The infiltration closure theorem (paper §7): the infiltration-finite series are closed
 under addition, scalar multiplication, the infiltration product, and right derivatives.
@@ -2848,7 +2848,7 @@ private theorem orbitDec_iff (A : InfiltrationAutomaton α) (p : MvPolynomial (F
 
 /--
 ---
-conclusion: Lax946791.Infiltration.InfiltrationEqualityDecidable
+conclusion: Lax619925.Infiltration.InfiltrationEqualityDecidable
 ---
 The equality (zeroness) problem is decidable for infiltration automata over a finite
 alphabet (paper §7).  As in the Hadamard and shuffle cases, the orbit-ideal chain `I_n`
@@ -2971,7 +2971,7 @@ private theorem InfiltrationWitnessData_iff (f : Series α) :
 
 /--
 ---
-conclusion: Lax946791.Infiltration.InfiltrationAntiDerivativeClosure
+conclusion: Lax619925.Infiltration.InfiltrationAntiDerivativeClosure
 ---
 The infiltration anti-derivative closure (paper §7): over a finite alphabet, if `g` is a left
 anti-derivative of a tuple `f` of infiltration-finite series (`leftDeriv a g = f a` for all
@@ -3335,7 +3335,7 @@ noncomputable def infiltrationEffectivePrevariety [Fintype α] : EffectivePrevar
 
 /--
 ---
-conclusion: Lax946791.Infiltration.InfiltrationEffectivePrevariety
+conclusion: Lax619925.Infiltration.InfiltrationEffectivePrevariety
 ---
 The infiltration-finite series form an effective prevariety over a finite alphabet
 (paper §7, theorem): the effective prevariety `infiltrationEffectivePrevariety` has
@@ -3351,7 +3351,7 @@ theorem InfiltrationEffectivePrevariety [Fintype α] :
 
 /--
 ---
-conclusion: Lax946791.Infiltration.InfiltrationCommutativityDecidable
+conclusion: Lax619925.Infiltration.InfiltrationCommutativityDecidable
 ---
 The commutativity problem is decidable for infiltration-finite series over a finite
 alphabet (paper §7).  This is the meta-theorem
@@ -3370,5 +3370,5 @@ theorem InfiltrationCommutativityDecidable [Fintype α] :
     dsimp only [infiltrationEffectivePrevariety]
   simpa [hsem] using hd A
 
-end Lax946791Proofs.Infiltration
+end Lax619925Proofs.Infiltration
 

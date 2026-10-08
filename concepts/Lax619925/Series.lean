@@ -17,7 +17,7 @@ definitions of §2 of the paper together with the elementary facts about
 derivatives and reversal that the later sections use.
 -/
 
-namespace Lax946791.Series
+namespace Lax619925.Series
 
 -- the type and the module carrying it have the same name on purpose
 set_option linter.dupNamespace false in
@@ -87,4 +87,4 @@ axiom ReversalInvolution (α : Type*) (f : Series α) : reversal α (reversal α
 axiom ReversalSwapsDerivatives (α : Type*) (a : α) (f : Series α) :
   reversal α (leftDeriv α a f) = rightDeriv α a (reversal α f)
 
-end Lax946791.Series
+end Lax619925.Series

@@ -1,7 +1,7 @@
-import Lax946791.Recognisable
-import Lax946791.Series
-import Lax946791.Prevariety
-import Lax946791.Commutativity
+import Lax619925.Recognisable
+import Lax619925.Series
+import Lax619925.Prevariety
+import Lax619925.Commutativity
 import Mathlib.Data.Matrix.Basic
 import Mathlib.Data.Matrix.Mul
 import Mathlib.Data.Matrix.Basis
@@ -23,9 +23,9 @@ import Mathlib.Data.Finset.Lattice.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
 
-namespace Lax946791Proofs.Recognisable
+namespace Lax619925Proofs.Recognisable
 
-open Lax946791.Series Lax946791.Prevariety Lax946791.Commutativity Lax946791.Recognisable
+open Lax619925.Series Lax619925.Prevariety Lax619925.Commutativity Lax619925.Recognisable
 open Matrix Submodule
 open Classical
 
@@ -59,7 +59,7 @@ private theorem Mword_reverse_transpose (r : LinearRepresentation α) (w : List 
 
 /--
 ---
-conclusion: Lax946791.Recognisable.RecognisableReversal
+conclusion: Lax619925.Recognisable.RecognisableReversal
 ---
 The transposed representation `(k, y, x, Mᵀ)` recognises `reversal f`: on a word
 `w` it computes `y · (M(w.reverse))ᵀ · x`, which equals `x · M(w.reverse) · y = f (w.reverse)`
@@ -75,23 +75,6 @@ theorem RecognisableReversal (f : Series α) (hf : IsRecognisable α f) :
   dsimp [LinearRepresentation.Mword]
   rw [dotProduct_transpose_mulVec]
 
-/-- The zero series is recognised by the zero representation of dimension `1`. -/
-private theorem RecognisableZero : IsRecognisable α 0 := by
-  use { dim := 1, init := 0, final := 0, M := fun _ => 0 }
-  ext w
-  dsimp [LinearRepresentation.sem, LinearRepresentation.Mword]
-  simp
-
-/-- A scalar multiple of a recognisable series is recognisable: scale the initial
-    vector. -/
-private theorem RecognisableSMul (c : ℚ) (f : Series α) (hf : IsRecognisable α f) :
-    IsRecognisable α (c • f) := by
-  obtain ⟨r, rfl⟩ := hf
-  use { dim := r.dim, init := c • r.init, final := r.final, M := r.M }
-  ext w
-  dsimp [LinearRepresentation.sem, LinearRepresentation.Mword]
-  simp [smul_dotProduct]
-
 /-- The left derivative of a recognisable series is recognisable: prepend the
     letter matrix to the initial vector. -/
 private theorem RecognisableLeftDeriv (a : α) (f : Series α) (hf : IsRecognisable α f) :
@@ -103,7 +86,7 @@ private theorem RecognisableLeftDeriv (a : α) (f : Series α) (hf : IsRecognisa
 
 /--
 ---
-conclusion: Lax946791.Recognisable.RecognisableRightDeriv
+conclusion: Lax619925.Recognisable.RecognisableRightDeriv
 ---
 By the paper's double-reversal identity `rightDeriv a f = reversal (leftDeriv a (reversal f))`:
 `reversal f` is recognisable (transposition), so is `leftDeriv a (reversal f)` (left-derivative
@@ -193,7 +176,7 @@ private theorem LF_add (f g : Series α) (hf : IsLinearlyFinite α f) (hg : IsLi
 
 /--
 ---
-conclusion: Lax946791.Recognisable.LinearlyFiniteClosure
+conclusion: Lax619925.Recognisable.LinearlyFiniteClosure
 ---
 The class of linearly finite series is closed under addition, scalar multiplication, and
 left derivatives (paper §4).  Each operation is witnessed by an explicit finite generator
@@ -210,7 +193,7 @@ theorem LinearlyFiniteClosure :
 
 /--
 ---
-conclusion: Lax946791.Recognisable.LinearlyFiniteAntiDerivativeClosure
+conclusion: Lax619925.Recognisable.LinearlyFiniteAntiDerivativeClosure
 ---
 If `g` is a left anti-derivative of the tuple `f` (`leftDeriv a g = f a` for every letter
 `a`) and each `f a` is linearly finite, then `g` is linearly finite.  The witness is
@@ -264,9 +247,6 @@ private def semLin (r : LinearRepresentation α) : (Fin r.dim → ℚ) →ₗ[�
   { toFun := fun v w => dotProduct v (Matrix.mulVec (r.Mword w) r.final)
     map_add' := fun v w => by funext u; simp [add_dotProduct]
     map_smul' := fun c v => by funext u; simp [smul_dotProduct] }
-
-/-- `r.sem` is `semLin r` applied to `r.init` (definitionally the same formula). -/
-private theorem semLin_sem (r : LinearRepresentation α) : r.sem = semLin r r.init := rfl
 
 /-- The range of `semLin r` is closed under left derivatives:
     `leftDeriv a (semLin r v) = semLin r (v ᵥ* M a)`. -/
@@ -419,7 +399,7 @@ private theorem recognisable_of_linearly_finite (f : Series α) (hf : IsLinearly
 
 /--
 ---
-conclusion: Lax946791.Recognisable.RecognisableLinearlyFinite
+conclusion: Lax619925.Recognisable.RecognisableLinearlyFinite
 ---
 The classical coincidence lemma (paper §4): a series is recognisable if and only if it
 is linearly finite.  The forward direction (`LF_of_recognisable`) takes the
@@ -505,7 +485,7 @@ private theorem decCasesOnTrueIff {q : Prop} (d : Decidable q) :
 
 /--
 ---
-conclusion: Lax946791.Recognisable.RecognisableEqualityDecidable
+conclusion: Lax619925.Recognisable.RecognisableEqualityDecidable
 ---
 The equality (zeroness) problem is decidable for recognisable series over a finite
 alphabet (paper §4).  The decider `decZero` reads, as a `Bool`, the linear-algebra
@@ -675,7 +655,7 @@ noncomputable def recPrevariety [Fintype α] : EffectivePrevariety α := by
 
 /--
 ---
-conclusion: Lax946791.Recognisable.RecognisableEffectivePrevariety
+conclusion: Lax619925.Recognisable.RecognisableEffectivePrevariety
 ---
 The class of recognisable (= linearly finite) series is an effective prevariety
 (paper §4, theorem).  The presentations are linear representations, so the image of the
@@ -691,7 +671,7 @@ theorem RecognisableEffectivePrevariety [Fintype α] :
 
 /--
 ---
-conclusion: Lax946791.Recognisable.RecognisableCommutativityDecidable
+conclusion: Lax619925.Recognisable.RecognisableCommutativityDecidable
 ---
 The commutativity problem is decidable for recognisable series over a finite alphabet
 (paper §4).  This is the meta-theorem (`EffectivePrevarietyCommutativityDecidable`)
@@ -708,4 +688,4 @@ theorem RecognisableCommutativityDecidable [Fintype α] :
   have hsem : recPrevariety.sem r = r.sem := by dsimp only [recPrevariety]
   simpa [hsem] using hd r
 
-end Lax946791Proofs.Recognisable
+end Lax619925Proofs.Recognisable

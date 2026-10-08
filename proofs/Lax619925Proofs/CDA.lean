@@ -1,7 +1,7 @@
-import Lax946791.CDA
-import Lax946791.Shuffle
-import Lax946791.Series
-import Lax946791Proofs.Shuffle
+import Lax619925.CDA
+import Lax619925.Shuffle
+import Lax619925.Series
+import Lax619925Proofs.Shuffle
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Fintype.Basic
@@ -33,10 +33,10 @@ Its semantics `g_i = ⟦A⟧_{X_i}` is the unique solution of the companion syst
 the initial condition extends to a CDA solution iff all `g_i` are commutative.
 -/
 
-namespace Lax946791Proofs.CDA
+namespace Lax619925Proofs.CDA
 
-open Lax946791.CDA Lax946791.Shuffle Lax946791.Series
-open Lax946791Proofs.Shuffle
+open Lax619925.CDA Lax619925.Shuffle Lax619925.Series
+open Lax619925Proofs.Shuffle
 open MvPolynomial
 
 /-! ### The Parikh-image isomorphism -/
@@ -49,12 +49,12 @@ noncomputable def wordFromParikh (d : ℕ) (n : Fin d → ℕ) : List (Fin d) :=
 
 /-- Lift an exponential power series to a (necessarily commutative) series: the
     coefficient of the word `w` is the series value at the Parikh image of `w`. -/
-def toSeries (d : ℕ) (f : Lax946791.CDA.ExpPowerSeries d) : Series (Fin d) :=
+def toSeries (d : ℕ) (f : Lax619925.CDA.ExpPowerSeries d) : Series (Fin d) :=
   fun w => f (parikh (Fin d) w)
 
 /-- Project a (commutative) series to an exponential power series: the value at the
     multi-index `n` is the series value at a word with Parikh image `n`. -/
-noncomputable def toSeq (d : ℕ) (g : Series (Fin d)) : Lax946791.CDA.ExpPowerSeries d :=
+noncomputable def toSeq (d : ℕ) (g : Series (Fin d)) : Lax619925.CDA.ExpPowerSeries d :=
   fun n => g (wordFromParikh d n)
 
 /-- `wordFromParikh` has the intended Parikh image: `parikh (wordFromParikh n) = n`. -/
@@ -83,7 +83,7 @@ private theorem parikh_cons (d : ℕ) (j : Fin d) (w : List (Fin d)) :
   · simp [h, Ne.symm h]
 
 /-- Lifting then projecting is the identity on exponential power series. -/
-private theorem toSeq_toSeries (d : ℕ) (f : Lax946791.CDA.ExpPowerSeries d) :
+private theorem toSeq_toSeries (d : ℕ) (f : Lax619925.CDA.ExpPowerSeries d) :
     toSeq d (toSeries d f) = f := by
   funext n
   dsimp [toSeq, toSeries]
@@ -107,7 +107,7 @@ private theorem toSeries_toSeq (d : ℕ) (g : Series (Fin d)) (hg : IsCommutativ
     `toSeries (expDeriv_j f) = leftDeriv a_j (toSeries f)`.  Here `expDeriv` is
     definitionally the shift, so this is the same identity as the polyrec
     `toSeries_shift`. -/
-private theorem toSeries_expDeriv (d : ℕ) (j : Fin d) (f : Lax946791.CDA.ExpPowerSeries d) :
+private theorem toSeries_expDeriv (d : ℕ) (j : Fin d) (f : Lax619925.CDA.ExpPowerSeries d) :
     toSeries d (expDeriv d j f) = leftDeriv (Fin d) j (toSeries d f) := by
   funext w
   dsimp [toSeries, expDeriv, leftDeriv]
@@ -115,20 +115,14 @@ private theorem toSeries_expDeriv (d : ℕ) (j : Fin d) (f : Lax946791.CDA.ExpPo
   congr
 
 /-- The lift of a sum is the sum of the lifts (the Parikh lift is linear). -/
-private theorem toSeries_add (d : ℕ) (f g : Lax946791.CDA.ExpPowerSeries d) :
+private theorem toSeries_add (d : ℕ) (f g : Lax619925.CDA.ExpPowerSeries d) :
     toSeries d (f + g) = toSeries d f + toSeries d g := by
-  funext w
-  dsimp [toSeries]
-
-/-- The lift of a scalar multiple is the scalar multiple of the lift. -/
-private theorem toSeries_smul (d : ℕ) (c : ℚ) (f : Lax946791.CDA.ExpPowerSeries d) :
-    toSeries d (c • f) = c • toSeries d f := by
   funext w
   dsimp [toSeries]
 
 /-- The lift of a sequence is a commutative series (it is constant on words with the
     same Parikh image). -/
-private theorem toSeries_commutative (d : ℕ) (f : Lax946791.CDA.ExpPowerSeries d) :
+private theorem toSeries_commutative (d : ℕ) (f : Lax619925.CDA.ExpPowerSeries d) :
     IsCommutative (Fin d) (toSeries d f) := by
   intro u v hce
   dsimp [IsCommutative, toSeries]
@@ -321,7 +315,7 @@ private theorem prodNp_of_nprime (d : ℕ) (j : Fin d) (n : Fin d → ℕ) (m : 
     (`expDeriv_j (f * g) = (expDeriv_j f) * g + f * (expDeriv_j g)`).  This is the
     Leibniz rule, and it is what makes the binomial-convolution algebra a differential
     algebra (the exponential algebra). -/
-private theorem expDeriv_expMul (d : ℕ) (j : Fin d) (f g : Lax946791.CDA.ExpPowerSeries d) :
+private theorem expDeriv_expMul (d : ℕ) (j : Fin d) (f g : Lax619925.CDA.ExpPowerSeries d) :
     expDeriv d j (expMul d f g) = expMul d (expDeriv d j f) g + expMul d f (expDeriv d j g) := by
   funext n
   have hshift : expDeriv d j (expMul d f g) n = (expMul d f g) (n + ej d j) := by
@@ -809,7 +803,7 @@ private theorem shuffle_comm {α : Type*} (f g : Series α) : shuffle α f g = s
   exact this f g
 
 /-- The binomial-convolution product at the zero multi-index is the pointwise product. -/
-private theorem expMul_zero (d : ℕ) (f g : Lax946791.CDA.ExpPowerSeries d) :
+private theorem expMul_zero (d : ℕ) (f g : Lax619925.CDA.ExpPowerSeries d) :
     expMul d f g 0 = f 0 * g 0 := by
   rw [expMul_clean, cleanExpMul]
   have hbox : cleanBox d 0 = {0} := by
@@ -831,7 +825,7 @@ private theorem expMul_zero (d : ℕ) (f g : Lax946791.CDA.ExpPowerSeries d) :
     `toSeries (expMul f g) = shuffle (toSeries f) (toSeries g)`.  Both sides satisfy
     the same initial condition and the same Leibniz recursion (the shuffle
     characterisation), so they are equal; the Leibniz step uses the product rule. -/
-private theorem toSeries_expMul (d : ℕ) (f g : Lax946791.CDA.ExpPowerSeries d) :
+private theorem toSeries_expMul (d : ℕ) (f g : Lax619925.CDA.ExpPowerSeries d) :
     toSeries d (expMul d f g) = shuffle (Fin d) (toSeries d f) (toSeries d g) := by
   funext w
   induction w generalizing f g with
@@ -868,7 +862,7 @@ private theorem toSeries_expMul (d : ℕ) (f g : Lax946791.CDA.ExpPowerSeries d)
 
 /-- The lift of the `n`-fold binomial-convolution power is the `n`-fold shuffle power
     of the lift. -/
-private theorem toSeries_expPow (d : ℕ) (f : Lax946791.CDA.ExpPowerSeries d) (n : ℕ) :
+private theorem toSeries_expPow (d : ℕ) (f : Lax619925.CDA.ExpPowerSeries d) (n : ℕ) :
     toSeries d (expPow d f n) = shufflePow (Fin d) (toSeries d f) n := by
   induction n with
   | zero =>
@@ -881,7 +875,7 @@ private theorem toSeries_expPow (d : ℕ) (f : Lax946791.CDA.ExpPowerSeries d) (
 /-- Lifting commutes with the `foldr` of binomial-convolution powers: the lift of
     `L.foldr (fun i acc => expMul d acc (expPow d (fs i) (m i))) (1)` is the `foldr` of
     the shuffle powers of the lifts, starting from the lifted unit. -/
-private theorem toSeries_foldr (d k : ℕ) (fs : Fin k → Lax946791.CDA.ExpPowerSeries d)
+private theorem toSeries_foldr (d k : ℕ) (fs : Fin k → Lax619925.CDA.ExpPowerSeries d)
     (m : Fin k →₀ ℕ) (L : List (Fin k)) :
     toSeries d (L.foldr (fun i acc => expMul d acc (expPow d (fs i) (m i)))
         (fun idx => if idx = 0 then 1 else 0)) =
@@ -929,7 +923,7 @@ private theorem foldr_eq_univfold {α : Type*} (k : ℕ) (b : Series α) (H : Fi
     binomial-convolution powers into the `foldr` of shuffle powers (`toSeries_foldr`), and
     the latter is the `Finset.fold` over `univ` that defines `shuffleProd`
     (`foldr_eq_univfold`). -/
-private theorem toSeries_evalCDA (d k : ℕ) (fs : Fin k → Lax946791.CDA.ExpPowerSeries d)
+private theorem toSeries_evalCDA (d k : ℕ) (fs : Fin k → Lax619925.CDA.ExpPowerSeries d)
     (p : MvPolynomial (Fin k) ℚ) :
     toSeries d (evalCDA d k fs p) = shuffleEval (Fin d) k (fun i => toSeries d (fs i)) p := by
   dsimp [evalCDA, shuffleEval]
@@ -1170,7 +1164,7 @@ private theorem companion_unique (d k : ℕ)
     component series are all commutative. -/
 private theorem bridge (d k : ℕ) (hd : 0 < d) (hk : 0 < k)
     (p : Fin k → Fin d → MvPolynomial (Fin k) ℚ) (c : Fin k → ℚ) :
-    (∃ f : Fin k → Lax946791.CDA.ExpPowerSeries d, SolvesCDA d k f p c) ↔
+    (∃ f : Fin k → Lax619925.CDA.ExpPowerSeries d, SolvesCDA d k f p c) ↔
       ∀ i, IsCommutative (Fin d) ((companionAutomaton d k hd hk p c).sem (X i)) := by
   let A := companionAutomaton d k hd hk p c
   constructor
@@ -1202,7 +1196,7 @@ private theorem bridge (d k : ℕ) (hd : 0 < d) (hk : 0 < k)
   · -- (←) The companion components solve the companion system and are commutative, so
       -- their Parikh projections `f_i = toSeq (A.sem (X_i))` solve the CDA system.
     intro hcomm
-    let f : Fin k → Lax946791.CDA.ExpPowerSeries d := fun i => toSeq d (A.sem (X i))
+    let f : Fin k → Lax619925.CDA.ExpPowerSeries d := fun i => toSeq d (A.sem (X i))
     have hlift_all : ∀ i, toSeries d (f i) = A.sem (X i) := by
       intro i
       dsimp [f]
@@ -1292,9 +1286,9 @@ private theorem companionComponent_spec (α : Type*) (A : ShuffleAutomaton α) (
 
 /--
 ---
-conclusion: Lax946791.CDA.CDASolvability
+conclusion: Lax619925.CDA.CDASolvability
 assumptions:
-  - Lax946791.Shuffle.ShuffleCommutativityDecidable
+  - Lax619925.Shuffle.ShuffleCommutativityDecidable
 ---
 The CDA solvability problem is decidable (paper §6.4): the decision reduces to
 checking that all components of the companion shuffle automaton's recognised series
@@ -1303,7 +1297,7 @@ applied to the effective prevariety of shuffle-finite series).
 -/
 theorem CDASolvability (d k : ℕ) (hd : 0 < d) (hk : 0 < k) :
     ∃ dec : (Fin k → Fin d → MvPolynomial (Fin k) ℚ) → (Fin k → ℚ) → Bool,
-      ∀ p c, dec p c = true ↔ ∃ f : Fin k → Lax946791.CDA.ExpPowerSeries d, SolvesCDA d k f p c := by
+      ∀ p c, dec p c = true ↔ ∃ f : Fin k → Lax619925.CDA.ExpPowerSeries d, SolvesCDA d k f p c := by
   obtain ⟨dcomm, hdcomm⟩ := ShuffleCommutativityDecidable (Fin d)
   let dec : (Fin k → Fin d → MvPolynomial (Fin k) ℚ) → (Fin k → ℚ) → Bool :=
     fun p c => decide (∀ i, dcomm (companionComponent (Fin d) (companionAutomaton d k hd hk p c) i) = true)
@@ -1323,10 +1317,10 @@ theorem CDASolvability (d k : ℕ) (hd : 0 < d) (hk : 0 < k) :
       rw [companionComponent_spec (Fin d) A i] at this
       exact this.mpr (h i)
   have hbridge : (∀ i, IsCommutative (Fin d) (A.sem (X i))) ↔
-      ∃ f : Fin k → Lax946791.CDA.ExpPowerSeries d, SolvesCDA d k f p c :=
+      ∃ f : Fin k → Lax619925.CDA.ExpPowerSeries d, SolvesCDA d k f p c :=
     (bridge d k hd hk p c).symm
   calc
     dec p c = true ↔ ∀ i, IsCommutative (Fin d) (A.sem (X i)) := hdec
-    _ ↔ ∃ f : Fin k → Lax946791.CDA.ExpPowerSeries d, SolvesCDA d k f p c := hbridge
+    _ ↔ ∃ f : Fin k → Lax619925.CDA.ExpPowerSeries d, SolvesCDA d k f p c := hbridge
 
-end Lax946791Proofs.CDA
+end Lax619925Proofs.CDA
