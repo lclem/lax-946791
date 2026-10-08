@@ -18,8 +18,8 @@ series closed under left derivatives; it is *recognisable* if it is recognised b
 a linear representation `(k, x, y, M)`, i.e. `f (w) = x · M(w) · y`.  The two
 notions coincide (a classical result).  The class of recognisable series is an
 effective prevariety — equality is decidable by linear algebra — and hence the
-commutativity problem is decidable for it (paper §4).  This is the fully closed
-chain in the proof network: no open leaf is involved.
+commutativity problem is decidable for it (paper §4).  This is the only chain in
+the proof network that does not depend on the ideal-membership statement.
 -/
 
 namespace Lax619925.Recognisable

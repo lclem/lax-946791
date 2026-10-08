@@ -25,8 +25,9 @@ an infiltration `Δ` is `S − id` for the endomorphism `S = id + Δ`, so the ex
 is computed by substituting `X_i ↦ X_i + Δ_a X_i` and subtracting the identity.
 The infiltration-finite series form an effective prevariety, so equality and the
 commutativity problem are decidable for them; the equality decision reduces to
-ideal membership in the configuration polynomial ring (the open leaf), via the same
-ideal-chain argument as for the Hadamard and shuffle automata.
+ideal membership in the configuration polynomial ring (the ideal-membership
+statement), via the same ideal-chain argument as for the Hadamard and shuffle
+automata.
 -/
 
 namespace Lax619925.Infiltration
@@ -183,7 +184,7 @@ axiom InfiltrationEffectivePrevariety (α : Type*) [Fintype α] :
     finite alphabet (paper §7): there is a procedure that, given an infiltration
     automaton, decides whether the series it recognises is the zero series.  The
     decision reduces to ideal membership in the configuration polynomial ring, the
-    open leaf. -/
+    ideal-membership statement. -/
 axiom InfiltrationEqualityDecidable (α : Type*) [Fintype α] :
   ∃ d : InfiltrationAutomaton α → Bool, ∀ A, d A = true ↔ A.recognised = 0
 

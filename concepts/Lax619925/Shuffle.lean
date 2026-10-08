@@ -23,7 +23,7 @@ extends to a *derivation* of the configuration space (the paper's differential-
 algebra structure, §6).  The shuffle-finite series form an effective prevariety,
 so equality and the commutativity problem are decidable for them; the equality
 decision reduces to ideal membership in the configuration polynomial ring (the
-open leaf), via the same ideal-chain argument as for the Hadamard and
+ideal-membership statement), via the same ideal-chain argument as for the Hadamard and
 infiltration automata.
 -/
 

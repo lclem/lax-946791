@@ -23,7 +23,7 @@ configuration space `ℚ[X_1, …, X_k]`, a final-weight functional `F`, and a
 transition `Δ_a` that extends to an endomorphism of the configuration space.
 The Hadamard-finite series form an effective prevariety, so equality and the
 commutativity problem are decidable for them; the equality decision reduces to
-ideal membership in the configuration polynomial ring (the open leaf).
+ideal membership in the configuration polynomial ring (the ideal-membership statement).
 -/
 
 namespace Lax619925.Hadamard
