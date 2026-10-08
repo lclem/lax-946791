@@ -17,3 +17,4 @@ paper/*.fls
 paper/*.out
 paper/*.pdf
 paper/*.run.xml
+paper/*.synctex.gz
