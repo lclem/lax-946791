@@ -8,3 +8,12 @@ lake-manifest.json
 scratch/
 paper/comment.cut
 paper/*.log
+paper/*.aux
+paper/*.bbl
+paper/*.bcf
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.out
+paper/*.pdf
+paper/*.run.xml
