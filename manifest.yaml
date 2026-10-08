@@ -7,7 +7,23 @@ title: "The commutativity problem for effective varieties of formal series, and
 authors:
   - name: Lorenzo Clemente
     orcid: "0000-0003-0578-9103"
-bibEntries: []
+    github: "lclem
+  - name: "Claude Code with Qwen-3.8"
+bibEntries:
+  - |
+    @inproceedings{Clemente:LICS:2025,
+    author = {Lorenzo Clemente},
+    doi = {https://dx.doi.org/10.1109/lics65433.2025.00066},
+    title = {The commutativity problem for effective varieties of formal series, and applications},
+    url = {http://dx.doi.org/10.1109/lics65433.2025.00066},
+    booktitle = {Proc.~of LICS'25},
+    publisher = {IEEE},
+    year = {2025},
+    month = {jun},
+    pages = {804--817},
+    date-added = {2025-10-10 9:17:13 +0100},
+    date-modified = {2025-10-12 22:54:21 +0100}
+    }
 paper:
   folder: paper
   main: main.tex
